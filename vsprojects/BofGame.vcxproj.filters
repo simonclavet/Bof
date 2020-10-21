@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{76497924-af3b-41e3-b278-abdc05f05b5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\BofGame">
+      <UniqueIdentifier>{78edefa8-5e58-4bcc-bdc4-432b9677c228}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\BofGame\stdafx.cpp">
+      <Filter>src\BofGame</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\BofGame\BofGame.cpp">
+      <Filter>src\BofGame</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\BofGame\stdafx.h">
+      <Filter>src\BofGame</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

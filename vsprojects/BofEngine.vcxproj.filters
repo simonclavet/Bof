@@ -1,0 +1,273 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{6f923100-2382-4492-af20-db7634fe5c12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\BofEngine">
+      <UniqueIdentifier>{fb97ec3b-4c46-4bd5-9634-59c431587d43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\BofEngine\utils">
+      <UniqueIdentifier>{cb3e777f-a57d-4ab8-a6b6-35d35c9d7077}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\BofEngine\testcomponents">
+      <UniqueIdentifier>{0f5a1fbd-89cb-4dac-999a-8830251edd5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\BofEngine\external">
+      <UniqueIdentifier>{29711a8b-4a05-4ba9-b8e1-a96e87d94af9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\BofEngine\components">
+      <UniqueIdentifier>{1ad0dd83-2a6e-4b65-a984-0974fe763946}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\BofEngine\external\kissnet">
+      <UniqueIdentifier>{ee553008-827d-4482-a3e1-d9685952b4aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\BofEngine\external\pods">
+      <UniqueIdentifier>{ec6ab33e-1a52-42b0-87cf-773d9fc88922}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\BofEngine\external\rapidjson">
+      <UniqueIdentifier>{b4719282-cb70-4362-a25c-6376865c5af4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\BofEngine\utils\GoodSave.h">
+      <Filter>src\BofEngine\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\utils\hashsortedvector.h">
+      <Filter>src\BofEngine\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\utils\ringbuffer.h">
+      <Filter>src\BofEngine\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\utils\Timer.h">
+      <Filter>src\BofEngine\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\utils\vulkanhelpers.h">
+      <Filter>src\BofEngine\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\utils\BofAsserts.h">
+      <Filter>src\BofEngine\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\BofEngine.h">
+      <Filter>src\BofEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\components\GoodComponents.h">
+      <Filter>src\BofEngine\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\components\Simulation.h">
+      <Filter>src\BofEngine\components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\magic_enum.h">
+      <Filter>src\BofEngine\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\stb_image.h">
+      <Filter>src\BofEngine\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\tiny_obj_loader.h">
+      <Filter>src\BofEngine\external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\allocators.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\cursorstreamwrapper.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\document.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\encodedstream.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\encodings.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\error\en.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\error\error.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\filereadstream.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\filewritestream.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\fwd.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\biginteger.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\clzll.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\diyfp.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\dtoa.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\ieee754.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\itoa.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\meta.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\pow10.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\regex.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\stack.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\strfunc.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\strtod.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\internal\swap.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\istreamwrapper.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\memorybuffer.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\memorystream.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\msinttypes\inttypes.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\msinttypes\stdint.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\ostreamwrapper.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\pointer.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\prettywriter.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\rapidjson.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\reader.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\schema.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\stream.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\stringbuffer.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\rapidjson\writer.h">
+      <Filter>src\BofEngine\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\kissnet\kissnet.hpp">
+      <Filter>src\BofEngine\external\kissnet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\binary.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\buffers.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\base64.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\binary_wrappers.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\deserializer.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\endianness.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\formats\binary_input.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\formats\binary_output.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\formats\json_input.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\formats\json_output.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\formats\msgpack_aux.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\formats\msgpack_input.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\formats\msgpack_output.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\names.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\rapidjson_wrappers.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\serializer.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\settings.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\details\utils.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\errors.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\json.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\msgpack.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\pods.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\streams.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\pods\types.h">
+      <Filter>src\BofEngine\external\pods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\Core.h">
+      <Filter>src\BofEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\EntryPoint.h">
+      <Filter>src\BofEngine</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\BofEngine\components\GoodComponents.cpp">
+      <Filter>src\BofEngine\components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\BofEngine\external\kissnet\kissnet.cpp">
+      <Filter>src\BofEngine\external\kissnet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\BofEngine\Core.cpp">
+      <Filter>src\BofEngine</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

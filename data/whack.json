@@ -1,0 +1,1503 @@
+{
+    "__version": 1,
+    "m_tagMap": {
+        "__val_version": 1,
+        "__size": 1,
+        "__data": [
+            {
+                "__key": 1001,
+                "__val": {
+                    "m_entities": {
+                        "__size": 2,
+                        "__data": [
+                            10000,
+                            10001
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "CrappyComp": {
+        "__version": 0,
+        "m_entities": {
+            "__size": 102,
+            "__data": [
+                10000,
+                10001,
+                10102,
+                10103,
+                10104,
+                10105,
+                10106,
+                10107,
+                10108,
+                10109,
+                10110,
+                10111,
+                10112,
+                10113,
+                10114,
+                10115,
+                10116,
+                10117,
+                10118,
+                10119,
+                10120,
+                10121,
+                10122,
+                10123,
+                10124,
+                10125,
+                10126,
+                10127,
+                10128,
+                10129,
+                10130,
+                10131,
+                10132,
+                10133,
+                10134,
+                10135,
+                10136,
+                10137,
+                10138,
+                10139,
+                10140,
+                10141,
+                10142,
+                10143,
+                10144,
+                10145,
+                10146,
+                10147,
+                10148,
+                10149,
+                10150,
+                10151,
+                10152,
+                10153,
+                10154,
+                10155,
+                10156,
+                10157,
+                10158,
+                10159,
+                10160,
+                10161,
+                10162,
+                10163,
+                10164,
+                10165,
+                10166,
+                10167,
+                10168,
+                10169,
+                10170,
+                10171,
+                10172,
+                10173,
+                10174,
+                10175,
+                10176,
+                10177,
+                10178,
+                10179,
+                10180,
+                10181,
+                10182,
+                10183,
+                10184,
+                10185,
+                10186,
+                10187,
+                10188,
+                10189,
+                10190,
+                10191,
+                10192,
+                10193,
+                10194,
+                10195,
+                10196,
+                10197,
+                10198,
+                10199,
+                10200,
+                10201
+            ]
+        },
+        "m_comps": {
+            "__version": 1,
+            "__size": 102,
+            "__data": [
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 1237,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 2,
+                            "__data": [
+                                {
+                                    "m_address": "localhost",
+                                    "m_port": 8080
+                                },
+                                {
+                                    "m_address": "localhost",
+                                    "m_port": 8080
+                                }
+                            ]
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 1101010.0,
+                    "m_otherThing": 0,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 3,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 4,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 5,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 6,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 7,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 8,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 9,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 10,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 11,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 12,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 13,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 14,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 15,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 16,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 17,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 18,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 19,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 20,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 21,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 22,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 23,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 24,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 25,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 26,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 27,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 28,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 29,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 30,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 31,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 32,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 33,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 34,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 35,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 36,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 37,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 38,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 39,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 40,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 41,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 42,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 43,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 44,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 45,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 46,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 47,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 48,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 49,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 50,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 51,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 52,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 53,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 54,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 55,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 56,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 57,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 58,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 59,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 60,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 61,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 62,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 63,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 64,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 65,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 66,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 67,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 68,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 69,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 70,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 71,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 72,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 73,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 74,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 75,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 76,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 77,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 78,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 79,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 80,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 81,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 82,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 83,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 84,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 85,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 86,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 87,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 88,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 89,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 90,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 91,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 92,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 93,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 94,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 95,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 96,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 97,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 98,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 99,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 100,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 101,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                },
+                {
+                    "m_thing": 123.45600128173828,
+                    "m_otherThing": 102,
+                    "m_serverList": {
+                        "__version": 1,
+                        "m_servers": {
+                            "__version": 1,
+                            "__size": 0,
+                            "__data": []
+                        },
+                        "m_hoho": 0
+                    }
+                }
+            ]
+        }
+    },
+    "ZozoComp": {
+        "__version": 0,
+        "m_entities": {
+            "__size": 1,
+            "__data": [
+                10000
+            ]
+        },
+        "m_comps": {
+            "__version": 1,
+            "__size": 1,
+            "__data": [
+                {
+                    "m_someIntVector": {
+                        "__size": 4,
+                        "__data": [
+                            543,
+                            5436,
+                            5433,
+                            5433
+                        ]
+                    },
+                    "m_someWhackBud": {
+                        "__version": 0,
+                        "m_zaza": "bouya",
+                        "m_crapounet": 1234
+                    }
+                }
+            ]
+        }
+    }
+}
