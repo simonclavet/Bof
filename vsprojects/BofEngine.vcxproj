@@ -15,7 +15,6 @@
     <ClInclude Include="..\src\BofEngine\components\GoodComponents.h" />
     <ClInclude Include="..\src\BofEngine\components\Simulation.h" />
     <ClInclude Include="..\src\BofEngine\Core.h" />
-    <ClInclude Include="..\src\BofEngine\EntryPoint.h" />
     <ClInclude Include="..\src\BofEngine\external\kissnet\kissnet.hpp" />
     <ClInclude Include="..\src\BofEngine\external\magic_enum.h" />
     <ClInclude Include="..\src\BofEngine\external\pods\binary.h" />
@@ -79,14 +78,104 @@
     <ClInclude Include="..\src\BofEngine\external\rapidjson\stream.h" />
     <ClInclude Include="..\src\BofEngine\external\rapidjson\stringbuffer.h" />
     <ClInclude Include="..\src\BofEngine\external\rapidjson\writer.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\async.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\async_logger-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\async_logger.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\cfg\argv.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\cfg\env.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\cfg\helpers-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\cfg\helpers.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\common-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\common.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\backtracer-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\backtracer.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\circular_q.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\console_globals.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\file_helper-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\file_helper.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\fmt_helper.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\log_msg-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\log_msg.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\log_msg_buffer-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\log_msg_buffer.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\mpmc_blocking_q.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\null_mutex.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\os-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\os.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\periodic_worker-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\periodic_worker.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\registry-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\registry.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\synchronous_factory.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\tcp_client-windows.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\tcp_client.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\thread_pool-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\thread_pool.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\windows_include.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bin_to_hex.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\chrono.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\color.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\compile.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\core.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\format-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\format.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\locale.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\os.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\ostream.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\posix.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\printf.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\ranges.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\chrono.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\fmt.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\ostr.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\formatter.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fwd.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\logger-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\logger.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\pattern_formatter-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\pattern_formatter.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\android_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\ansicolor_sink-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\ansicolor_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\base_sink-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\base_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\basic_file_sink-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\basic_file_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\daily_file_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\dist_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\dup_filter_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\msvc_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\null_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\ostream_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\ringbuffer_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\rotating_file_sink-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\rotating_file_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\sink-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\stdout_color_sinks-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\stdout_color_sinks.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\stdout_sinks-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\stdout_sinks.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\syslog_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\systemd_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\tcp_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\wincolor_sink-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\wincolor_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\win_eventlog_sink.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\spdlog-inl.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\spdlog.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\stopwatch.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\tweakme.h" />
+    <ClInclude Include="..\src\BofEngine\external\spdlog\version.h" />
     <ClInclude Include="..\src\BofEngine\external\stb_image.h" />
     <ClInclude Include="..\src\BofEngine\external\tiny_obj_loader.h" />
     <ClInclude Include="..\src\BofEngine\utils\BofAsserts.h" />
+    <ClInclude Include="..\src\BofEngine\utils\BofLog.h" />
     <ClInclude Include="..\src\BofEngine\utils\GoodSave.h" />
-    <ClInclude Include="..\src\BofEngine\utils\hashsortedvector.h" />
-    <ClInclude Include="..\src\BofEngine\utils\ringbuffer.h" />
+    <ClInclude Include="..\src\BofEngine\utils\HashSortedVector.h" />
+    <ClInclude Include="..\src\BofEngine\utils\RingBuffer.h" />
     <ClInclude Include="..\src\BofEngine\utils\Timer.h" />
-    <ClInclude Include="..\src\BofEngine\utils\vulkanhelpers.h" />
+    <ClInclude Include="..\src\BofEngine\utils\VulkanHelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\BofEngine\components\GoodComponents.cpp" />
@@ -102,13 +191,13 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -142,7 +231,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>BOF_PLATFORM_WINDOWS;BOF_BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\glm;C:\glfw\include;C:\VulkanSDK\1.2.148.1\Include;$(SolutionDir)src\$(ProjectName)\external;$(SolutionDir)src\$(ProjectName);$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\glm;C:\glfw\include;C:\VulkanSDK\1.2.148.1\Include;$(SolutionDir)src\BofEngine\external\;$(SolutionDir)src\BofEngine\;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -161,7 +250,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>BOF_PLATFORM_WINDOWS;BOF_BUILD_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\glm;C:\glfw\include;C:\VulkanSDK\1.2.148.1\Include;$(SolutionDir)src\$(ProjectName)\external;$(SolutionDir)src\$(ProjectName);$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\glm;C:\glfw\include;C:\VulkanSDK\1.2.148.1\Include;$(SolutionDir)src\BofEngine\external\;$(SolutionDir)src\BofEngine\;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>

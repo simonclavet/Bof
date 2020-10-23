@@ -3,11 +3,9 @@
 
 #pragma warning(disable: 4324) // prevent warning when custum aligning 
 
-#include "utils/vulkanhelpers.h"
+#include "utils/VulkanHelpers.h"
 
-#include "BofEngine.h"
-
-
+#include "utils/RingBuffer.h"
 
 struct Vertex
 {
@@ -101,11 +99,11 @@ struct UniformBufferObject
 
 
 
-class HelloTriangleApplication : public Bof::Application
+class BofGame
 {
 public:
-    void run() override
-    {
+    void run()
+    {       
         init();
         mainLoop();
         cleanup();
@@ -1095,7 +1093,7 @@ private:
  
     static void framebufferResizeCallback(GLFWwindow* window, int /*width*/, int /*height*/)
     {
-        const auto app = static_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
+        BofGame* app = static_cast<BofGame*>(glfwGetWindowUserPointer(window));
         app->m_framebufferResized = true;
     }
 
@@ -1248,8 +1246,8 @@ private:
             }
             const double averageFrameTimesMS = totalFrameTimesMS / m_frameTimes.GetSize();
             const int averageFPS = (int)(1000 / averageFrameTimesMS);
-            Cout << "mean frametime: " << averageFrameTimesMS << " ms (" << averageFPS << " fps)\n";
-            Cout << "worst frametime: " << worstFrameTimeMS << " ms\n";
+            std::cout << "mean frametime: " << averageFrameTimesMS << " ms (" << averageFPS << " fps)\n";
+            std::cout << "worst frametime: " << worstFrameTimeMS << " ms\n";
         }
 
         m_frameStartTimeMS = m_clock.GetTimeMillis();
@@ -1358,7 +1356,7 @@ private:
     static constexpr int32_t m_resolveAttachmentIndex = 2;
     static constexpr int32_t m_attachmentCount = 3;
 
-    Timer::SimpleClock m_clock;
+    Bof::SimpleClock m_clock;
 
     bool m_showFps = false;
     RingBuffer<double, 100> m_frameTimes;
@@ -1397,10 +1395,15 @@ private:
 
 
 
-
-
-Bof::Application* Bof::CreateApplication()
+int main(int /*argc*/, char** /*argv*/)
 {
-    return new HelloTriangleApplication();
+    Bof::Log::Init();
+
+    BofGame* app = new BofGame();
+
+    app->run();
+
+    delete app;
 }
+
 

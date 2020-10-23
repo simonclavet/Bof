@@ -28,21 +28,15 @@
     <Filter Include="src\BofEngine\external\rapidjson">
       <UniqueIdentifier>{b4719282-cb70-4362-a25c-6376865c5af4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\BofEngine\external\spdlog">
+      <UniqueIdentifier>{b82dad91-cfe7-4757-82c4-cdcd02b51958}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\BofEngine\utils\GoodSave.h">
       <Filter>src\BofEngine\utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\BofEngine\utils\hashsortedvector.h">
-      <Filter>src\BofEngine\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\BofEngine\utils\ringbuffer.h">
-      <Filter>src\BofEngine\utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\BofEngine\utils\Timer.h">
-      <Filter>src\BofEngine\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\BofEngine\utils\vulkanhelpers.h">
       <Filter>src\BofEngine\utils</Filter>
     </ClInclude>
     <ClInclude Include="..\src\BofEngine\utils\BofAsserts.h">
@@ -255,8 +249,284 @@
     <ClInclude Include="..\src\BofEngine\Core.h">
       <Filter>src\BofEngine</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\BofEngine\EntryPoint.h">
-      <Filter>src\BofEngine</Filter>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\async.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\async_logger-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\async_logger.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\cfg\argv.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\cfg\env.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\cfg\helpers-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\cfg\helpers.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\common-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\common.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\backtracer-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\backtracer.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\circular_q.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\console_globals.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\file_helper-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\file_helper.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\fmt_helper.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\log_msg-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\log_msg.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\log_msg_buffer-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\log_msg_buffer.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\mpmc_blocking_q.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\null_mutex.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\os-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\os.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\periodic_worker-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\periodic_worker.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\registry-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\registry.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\synchronous_factory.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\tcp_client-windows.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\tcp_client.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\thread_pool-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\thread_pool.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\details\windows_include.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bin_to_hex.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\chrono.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\color.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\compile.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\core.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\format-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\format.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\locale.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\os.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\ostream.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\posix.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\printf.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\bundled\ranges.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\chrono.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\fmt.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fmt\ostr.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\formatter.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\fwd.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\logger-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\logger.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\pattern_formatter-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\pattern_formatter.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\android_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\ansicolor_sink-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\ansicolor_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\base_sink-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\base_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\basic_file_sink-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\basic_file_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\daily_file_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\dist_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\dup_filter_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\msvc_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\null_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\ostream_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\ringbuffer_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\rotating_file_sink-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\rotating_file_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\sink-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\stdout_color_sinks-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\stdout_color_sinks.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\stdout_sinks-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\stdout_sinks.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\syslog_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\systemd_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\tcp_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\wincolor_sink-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\wincolor_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\sinks\win_eventlog_sink.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\spdlog-inl.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\spdlog.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\stopwatch.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\tweakme.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\external\spdlog\version.h">
+      <Filter>src\BofEngine\external\spdlog</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\utils\BofLog.h">
+      <Filter>src\BofEngine\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\utils\RingBuffer.h">
+      <Filter>src\BofEngine\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\utils\HashSortedVector.h">
+      <Filter>src\BofEngine\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\BofEngine\utils\VulkanHelpers.h">
+      <Filter>src\BofEngine\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

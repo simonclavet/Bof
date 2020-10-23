@@ -60,7 +60,7 @@
       <PreprocessorDefinitions>BOF_PLATFORM_WINDOWS;BOF_BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>C:\glm;C:\glfw\include;C:\VulkanSDK\1.2.148.1\Include;$(SolutionDir)src\BofEngine\external;$(ProjectDir);$(SolutionDir)src\BofEngine;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\glm;C:\glfw\include;C:\VulkanSDK\1.2.148.1\Include;$(SolutionDir)src\BofEngine\external;$(ProjectDir);$(SolutionDir)src\BofEngine</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -80,7 +80,7 @@
       <PreprocessorDefinitions>BOF_PLATFORM_WINDOWS;BOF_BUILD_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>C:\glm;C:\glfw\include;C:\VulkanSDK\1.2.148.1\Include;$(SolutionDir)src\BofEngine\external;$(ProjectDir);$(SolutionDir)src\BofEngine;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\glm;C:\glfw\include;C:\VulkanSDK\1.2.148.1\Include;$(SolutionDir)src\BofEngine\external;$(ProjectDir);$(SolutionDir)src\BofEngine</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -94,11 +94,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BofEngine\BofEngine.vcxproj">
-      <Project>{a2b43aa3-0f5b-41b6-8bf7-ebf7cd2af4bf}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\src\BofGame\BofGame.cpp" />
     <ClCompile Include="..\src\BofGame\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -107,6 +102,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\BofGame\stdafx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="BofEngine.vcxproj">
+      <Project>{a2b43aa3-0f5b-41b6-8bf7-ebf7cd2af4bf}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

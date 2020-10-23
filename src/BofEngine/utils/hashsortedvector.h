@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <iostream>
@@ -8,18 +7,18 @@
 #include <cstdlib>
 #include <algorithm>
 
-using namespace std; // remove this eventually
 
 // goals: Behaves like a sorted map, but
-// 1: cache-friendly ordered traversal of values (contiguous memory)
-// 2: O(1) find 
-// 3: don't care (too much) about insertion, deletion time. Be lazy and dirtyfy at modification time.
-// Ideally, Key should be just ints, values should not be pointers. Because hashes for long strings are long to compute anyway.
+// 1: cache-friendly ordered traversal of values (simple contiguous memory, without complicated sparse bin map thing)
+// 2: O(1) find. No compromise there. logn is for pussies.
+// 3: Don't care (too much) about insertion, deletion time. Be lazy and dirtyfy at modification time.
+// Ideally, Key should be just int (because hashes for long strings are long to compute).
+// Values should not be pointers. That would defeat the purpose. Ideal values are medium size POD data.
 template <typename Key, typename Value>
 class HashSortedVector
 {
-    vector<pair<Key, Value>> m_vec;
-    unordered_map<Key, size_t> m_indices;
+    std::vector<std::pair<Key, Value>> m_vec;
+    std::unordered_map<Key, size_t> m_indices;
 
     bool m_dirty = true;
 
@@ -28,12 +27,13 @@ public:
     void Add(const Key& key, const Value& val)
     {
         // forget about sorting for now
-        m_vec.push_back(make_pair(key, val));
+        m_vec.push_back(std::make_pair(key, val));
         m_dirty = true;
     }
 
     // Please don't modify the keys, or the vector directly. Just the values.
-    vector<pair<Key, Value>>& GetKeyValuePairs()
+    // I don't have time to deal with const with just the values. Be carefull.
+    std::vector<std::pair<Key, Value>>& GetKeyValuePairs()
     {
         if (m_dirty)
         {
@@ -42,11 +42,11 @@ public:
         return m_vec;
     }
 
-    const vector<pair<Key, Value>>& GetKeyValuePairs() const
+    const std::vector<std::pair<Key, Value>>& GetKeyValuePairs() const
     {
         if (m_dirty)
         {
-            // bah
+            // bah. Sorry.
             HashSortedVector<Key, Value>& deconstThis = const_cast<HashSortedVector<Key, Value>&>(*this);
             deconstThis.SortAndBuildIndices();
         }
@@ -69,7 +69,7 @@ public:
         return nullptr;
     }
 
-    Value Remove(const Key& key)
+    std::optional<Value> Remove(const Key& key)
     {
         // todo: remove many
         if (m_dirty)
@@ -91,6 +91,7 @@ public:
 
             return erasedValue;
         }
+        return {};
     }
 
 private:
@@ -109,6 +110,7 @@ private:
         m_dirty = false;
     }
 
+
 };
 
 
@@ -119,7 +121,7 @@ public:
 };
 
 
-int mmain(int argc, char* argv[])
+int mmain(int /*argc*/, char* /*argv[]*/)
 {
     HashSortedVector<int, Bouse> vec;
 
@@ -133,23 +135,23 @@ int mmain(int argc, char* argv[])
         Bouse b;
         b.a = 2 + i;
         b.b = 3;
-        size_t key = rand();
+        int key = rand();
         vec.Add(key, b);
     }
 
 
 
-    cout << vec.Get(100)->d << endl;
+    std::cout << vec.Get(100)->d << std::endl;
 
-    for (auto& [key, bouse] : vec.GetKeyValuePairs())
+    for (auto& [key, boute] : vec.GetKeyValuePairs())
     {
-        cout << "key:" << key << ", bouse.a=" << bouse.a << endl;
-        bouse.a = 543;
+        std::cout << "key:" << key << ", bouse.a=" << boute.a << std::endl;
+        boute.a = 543;
     }
 
-    Bouse removedBouse = vec.Remove(100);
+    Bouse removedBouse = vec.Remove(100).value();
 
-    cout << removedBouse.d << endl;
+    std::cout << removedBouse.d << std::endl;
 
 
 

@@ -1,38 +1,13 @@
 #pragma once
 
-#include "utils/BofAsserts.h"
-
-#define VULKAN_HPP_NO_EXCEPTIONS 
-// defining my own assert for vk assert on bad result. Message and result is supposed to be there in the context.
-#define VULKAN_HPP_ASSERT_ON_RESULT(condition) BOF_ASSERT(condition, "%s %s", message, vk::to_string(result).c_str()) 
-#include <vulkan/vulkan.hpp>
-
-#include <GLFW/glfw3.h>
-
-
-//#define STB_IMAGE_IMPLEMENTATION
-#define STBI_ASSERT(condition) BOF_ASSERT(condition, "stb assert") 
-#include "stb_image.h"
-
-//#include "tiny_obj_loader.h"
- 
-
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <vector>
-#include <array>
-#include <cstring>
-#include <cstdint>
-#include <optional>
-#include <set>
+#include "BofEngine.h"
 
 
 // sorry.. can't deal with std:: for such basic things, but 'using namespace std' is not a good idea.
+// If you have problems with an already defined Vector or String, sue me.
 template<typename T>
 using Vector = std::vector<T>;
 using String = std::string;
-inline std::ostream& Cout = std::cout;
 
 
 struct QueueFamilyIndices
@@ -69,7 +44,9 @@ VALUE checkVkResult(const vk::ResultValue<VALUE>& resultValue)
 
 
 
-
+// purelly functional library of little functions that should facilitate stuff.
+// do not extend a function if you need to add too many arguments to it.
+// Just copy paste its content instead. It's ok to copy paste stuff.
 class VulkanHelpers
 {
 public:

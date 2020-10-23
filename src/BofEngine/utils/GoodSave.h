@@ -283,7 +283,7 @@ public:
             filename.append(".bin");
             pods::BinarySerializer<decltype(out)> serializer(out);
             {
-                TIMED << "Serializing binary... ";
+                PROFILE("Serializing binary");
                 error = serializer.save(thing); 
             }
             break;
@@ -293,7 +293,7 @@ public:
             filename.append(".json");
             pods::PrettyJsonSerializer<decltype(out)> serializer(out);
             {
-                TIMED << "Serializing json... ";
+                PROFILE("Serializing json");
                 error = serializer.save(thing);
             }
             break;
@@ -319,7 +319,7 @@ public:
         if (myfile.is_open())
         {
             {
-                TIMED << "Writing " << out.size() << " bytes...";
+                PROFILE("Writing bytes");
                 myfile.write((char*)&out.data()[0], out.size());
             }
         }
@@ -402,7 +402,7 @@ public:
             std::vector<char> charVecBuffer;
             size_t length;
             {
-                TIMED << "Reading bytes...";
+                PROFILE("Reading bytes");
                 file.seekg(0, file.end);
                 length = file.tellg();
 
@@ -430,7 +430,7 @@ public:
             {
                 pods::BinaryDeserializer<decltype(buffer)> deserializer(buffer);
                 {
-                    TIMED << "Deserializing binary... ";
+                    PROFILE("Deserializing binary");
                     error = deserializer.load(thing);
                 }
                 break;
@@ -439,7 +439,7 @@ public:
             {
                 pods::JsonDeserializer<decltype(buffer)> deserializer(buffer);
                 {
-                    TIMED << "Deserializing json... ";
+                    PROFILE("Deserializing json");
                     error = deserializer.load(thing);
                 }
                 break;

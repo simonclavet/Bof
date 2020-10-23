@@ -10,7 +10,9 @@
 #include <condition_variable>
 #include <type_traits>
 
-namespace Timer
+#include "BofLog.h"
+
+namespace Bof
 {
 
 using Duration = decltype(std::chrono::system_clock::now() - std::chrono::system_clock::now());
@@ -48,26 +50,40 @@ class SimpleClock
         std::chrono::system_clock::time_point m_first;
 };
 
-class LogTimeOnDestruction
+
+
+// stupid profiler
+inline int g_LogTimeOnDestructionIndentLevel = 0;
+
+class LogTimeOnDestruction final
 {
 public:
-    LogTimeOnDestruction() : m_name("") {}
-    LogTimeOnDestruction(std::string name) : m_name(name) {}
+    LogTimeOnDestruction(std::string name) : m_name(name)
+    {
+        g_LogTimeOnDestructionIndentLevel += 1;
+    }
+    LogTimeOnDestruction(char* name, ...)
+    {
+        // todo: do the va_args thing...
+        m_name = name;
+        g_LogTimeOnDestructionIndentLevel += 1;
+    }
     ~LogTimeOnDestruction()
     {
-        int64_t time = clock.GetTimeMicro();
-        if (time > 10000)
+        g_LogTimeOnDestructionIndentLevel -= 1;
+
+        int64_t time = m_clock.GetTimeMicro();
+
+        std::string indentString = "";
+        while (indentString.length() < g_LogTimeOnDestructionIndentLevel * 4)
         {
-            std::cout << m_name << " took " << (time / 1000) << " ms" << std::endl;
+            indentString += "    ";
         }
-        else
-        {
-            std::cout << m_name << " took " << (time / 1000.0f) << " ms" << std::endl;
-        }
+        BOF_INFO("Prof: {} {:>10.3f}ms : {}", indentString, (time / 1000.0f), m_name.c_str());
     }
 private:
     std::string m_name;
-    Timer::SimpleClock clock;
+    SimpleClock m_clock;
 };
 
 
@@ -75,12 +91,17 @@ private:
 
 
 #ifdef ENABLE_PROFILING
-#define PROFILE(name) Timer::LogTimeOnDestruction ___logOnDestructionTimer_##name(#name)
+#define PROFILE(name) Bof::LogTimeOnDestruction ___logOnDestructionTimer(#name)
+#define PROFILE_FMT(name, ...) Bof::LogTimeOnDestruction ___logOnDestructionTimer(name, ...)
 #else
 #define PROFILE(name) do {(void)sizeof(name);} while(0)
 #endif
 
-#define TIMED Timer::LogTimeOnDestruction ___logOnDestructionTimer; std::cout
+
+
+
+
+
 
 
 /*
