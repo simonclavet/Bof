@@ -11,7 +11,8 @@
 // goals: Behaves like a sorted map, but
 // 1: cache-friendly ordered traversal of values (simple contiguous memory, without complicated sparse bin map thing)
 // 2: O(1) find. No compromise there. logn is for pussies.
-// 3: Don't care (too much) about insertion, deletion time. Be lazy and dirtyfy at modification time.
+// 3: Don't care (too much) about insertion, deletion time.
+// Be lazy and dirtyfy at modification time, the first find after a modif can be super long.
 // Ideally, Key should be just int (because hashes for long strings are long to compute).
 // Values should not be pointers. That would defeat the purpose. Ideal values are medium size POD data.
 template <typename Key, typename Value>
