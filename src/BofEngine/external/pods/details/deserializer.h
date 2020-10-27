@@ -279,14 +279,6 @@ namespace pods
                     [](Size) { return Error::NoError; },
                     value);
             }
-            // simon
-            template <class Key, class Val>
-            Error doProcess(std::unordered_map<Key, Val>& value)
-            {
-                return loadMap<Key, Val>(
-                    [](Size) { return Error::NoError; },
-                    value);
-            }
 
             template <class T, class Init, class GetIterator, typename std::enable_if<IsPodsSerializable<T>::value, int>::type = 0>
             Error loadArray(Init init, GetIterator getIterator)

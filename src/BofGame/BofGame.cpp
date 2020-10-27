@@ -110,8 +110,6 @@ public:
     }
 
 private:
-
-
  
     void init()
     {

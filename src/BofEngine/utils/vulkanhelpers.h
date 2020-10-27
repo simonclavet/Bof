@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BofEngine.h"
+#include "core/BofEngine.h"
 
 
 // sorry.. can't deal with std:: for such basic things, but 'using namespace std' is not a good idea.

@@ -36,7 +36,7 @@ public:
 };
 
 
-using namespace Timer;
+//using namespace Timer;
 
 
 void PrepareMyGridWithComponentVectors(ComponentGrid& grid)
@@ -131,7 +131,7 @@ void TestGoodComponents::Test()
             //cout << savedCompGrid.Equals(myGrid) << endl;
 
             {
-                TIMED << "Writing to " << magic_enum::enum_name(format) << " file... ";
+                //TIMED << "Writing to " << magic_enum::enum_name(format) << " file... ";
                 GoodHelpers::WriteToFile(myGrid, filename, format);
 
                 //switch (format)
@@ -158,7 +158,7 @@ void TestGoodComponents::Test()
             PrepareMyGridWithComponentVectors(loadedGrid);
 
             {
-                TIMED << "Reading from " << magic_enum::enum_name(format) << " file... ";
+                //TIMED << "Reading from " << magic_enum::enum_name(format) << " file... ";
                 GoodHelpers::ReadFromFile(loadedGrid, filename, format);
                 //loadedGridInternal.PostDeserialize();
 

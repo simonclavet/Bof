@@ -274,12 +274,6 @@ namespace pods
             {
                 return saveMap<const Key, const Val>(value.cbegin(), value.size());
             }
-            // simon
-            template <class Key, class Val>
-            Error doProcess(const std::unordered_map<Key, Val>& value)
-            {
-                return saveMap<const Key, const Val>(value.cbegin(), value.size());
-            }
 
             template <class T, class Iterator, typename std::enable_if<IsPodsSerializable<T>::value, int>::type = 0>
             Error saveArray(Iterator&& begin, size_t size)

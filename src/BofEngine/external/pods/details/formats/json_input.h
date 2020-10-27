@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "rapidjson/rapidjson.h"
-#include "rapidjson/reader.h"
+#include "../../../../../rapidjson/include/rapidjson/rapidjson.h"
+#include "../../../../../rapidjson/include/rapidjson/reader.h"
 
 #include "../base64.h"
 #include "../names.h"
