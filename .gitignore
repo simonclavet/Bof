@@ -4,4 +4,4 @@ bin-int/
 builtShaders/
 *.user
 build/
-*.log
+BofEngine.log
