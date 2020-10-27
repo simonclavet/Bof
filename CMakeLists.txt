@@ -6,7 +6,8 @@ project(Bof VERSION 1.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_subdirectory(src/BofGame)
-add_subdirectory(src/BofEngine)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
+add_subdirectory(BofEngine)
+add_subdirectory(BofGame)
 

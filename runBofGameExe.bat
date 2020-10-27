@@ -1,3 +1,3 @@
-bin\Release-x64\BofGame\BofGame.exe
+bin\RelWithDebInfo\BofGame\BofGame.exe
 
 
