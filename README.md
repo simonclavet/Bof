@@ -7,6 +7,7 @@ To build:
 Install CMake, Visual Studio.
 
 Run generate_project.bat
+
 Open build/Bof.sln 
 
 Set BofGame as startup project and hit F5.

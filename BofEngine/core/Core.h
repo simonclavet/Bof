@@ -35,10 +35,12 @@
 #include <glm/gtx/hash.hpp>
 #pragma warning(pop)
 
-#define STBI_ASSERT(condition) BOF_ASSERT(condition, "stb assert") 
+#define STBI_ASSERT(condition) BOF_ASSERT((condition), "stb assert") 
 #include "stb_image.h"
 
 #include <tiny_obj_loader.h>
 
-
-
+#define IMGUI_DISABLE_INCLUDE_IMCONFIG_H
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_vulkan.h"

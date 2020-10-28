@@ -3,7 +3,9 @@
 
 
 #define STB_IMAGE_IMPLEMENTATION
-#define STBI_ASSERT(condition) BOF_ASSERT(condition, "stb assert") 
+#ifndef STBI_ASSERT
+#define STBI_ASSERT(condition) BOF_ASSERT(condition, "stb assert")
+#endif
 #include "stb_image.h"
 
 

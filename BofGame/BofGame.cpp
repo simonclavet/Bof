@@ -3,9 +3,14 @@
 
 #pragma warning(disable: 4324) // prevent warning when custum aligning 
 
-#include "utils/VulkanHelpers.h"
+#include "utils/Helpers.h"
 
 #include "utils/RingBuffer.h"
+
+#ifdef _DEBUG
+#define IMGUI_VULKAN_DEBUG_REPORT
+#endif
+
 
 struct Vertex
 {
@@ -29,7 +34,7 @@ struct Vertex
         Vector<vk::VertexInputAttributeDescription> attributeDescriptions;
 
         {
-            auto& attributeDescription = attributeDescriptions.emplace_back(vk::VertexInputAttributeDescription{});;
+            auto& attributeDescription = attributeDescriptions.emplace_back(vk::VertexInputAttributeDescription{});
             attributeDescription.binding = 0;
             attributeDescription.location = 0;
             attributeDescription.format = vk::Format::eR32G32B32Sfloat;
@@ -37,7 +42,7 @@ struct Vertex
         }
 
         {
-            auto& attributeDescription = attributeDescriptions.emplace_back(vk::VertexInputAttributeDescription{});;
+            auto& attributeDescription = attributeDescriptions.emplace_back(vk::VertexInputAttributeDescription{});
             attributeDescription.binding = 0;
             attributeDescription.location = 1;
             attributeDescription.format = vk::Format::eR32G32B32Sfloat;
@@ -45,7 +50,7 @@ struct Vertex
         }
 
         {
-            auto& attributeDescription = attributeDescriptions.emplace_back(vk::VertexInputAttributeDescription{});;
+            auto& attributeDescription = attributeDescriptions.emplace_back(vk::VertexInputAttributeDescription{});
             attributeDescription.binding = 0;
             attributeDescription.location = 2;
             attributeDescription.format = vk::Format::eR32G32Sfloat;
@@ -425,6 +430,17 @@ private:
 
             m_descriptorSetLayout = checkVkResult(m_device->createDescriptorSetLayout(layoutInfo));
         }
+        {
+            PROFILE(initImgui);
+            IMGUI_CHECKVERSION();
+        }
+
+
+
+
+
+
+
         createSwapchainAndRelatedThings();
     }
 
@@ -991,7 +1007,10 @@ private:
                 commandBuffer.end();
             }
         }
+ 
     }
+
+
 
     void cleanup()
     {

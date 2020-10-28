@@ -1,3 +1,3 @@
-bin\RelWithDebInfo\BofGame\BofGame.exe
+.\bin\RelWithDebInfo\BofGame.exe
 
 

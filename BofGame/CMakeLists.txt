@@ -35,3 +35,5 @@ target_link_libraries(BofGame LINK_PUBLIC BofEngine)
 
 set_target_properties(BofGame PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+

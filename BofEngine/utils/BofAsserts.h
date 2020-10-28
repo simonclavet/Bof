@@ -5,19 +5,19 @@
 #include <cstdarg>
 
 
-#define BOF_ASSERTS_ENABLE
-
-//#define BOF_ASSERTS_PRINT_BUT_CONTINUE
-
 
 
 
 #define BOF_UNUSED(x) do {(void)sizeof(x);} while(0)
 
+// this is set only by release. Which means final/retail...
+#ifndef NO_BOF_ASSERTS
 
-
-#ifdef BOF_ASSERTS_ENABLE
-
+// This should be true only when testing a build without a debugger attached
+// so artists automatically skip asserts but still log them.
+// Automated tools could check logs and warn the adequate people.
+// todo: Pick this up from the commandline.
+inline bool g_BofAssertsNoDebuggerLogButContinue = false;
 
 #define BOF_HALT 0
 #define BOF_CONTINUE 1
@@ -41,7 +41,7 @@ inline int ReportAssertFailure(
         message = messageBuffer;
     }
 
-    printf("%s(%d): Assert: ", file, line);
+    printf("\nASSERT! %s(%d): ", file, line);
     if (condition != nullptr)
     {
         printf("'%s' ", condition);
@@ -50,20 +50,22 @@ inline int ReportAssertFailure(
     {
         printf("%s", message);
     }
-    printf("\n");
+    printf("\n\n");
 
-#ifdef BOF_ASSERTS_PRINT_BUT_CONTINUE
-    return BOF_CONTINUE;
-#else
-    return BOF_HALT;
-#endif
-
+    if (g_BofAssertsNoDebuggerLogButContinue)
+    {
+        return BOF_CONTINUE;
+    }
+    else
+    {
+        return BOF_HALT;
+    }
 }
 
 
 
 
-#define BOF_DEBUG_BREAK() {__debugbreak(); }
+#define BOF_DEBUG_BREAK() { __debugbreak(); }
 
 
 #define BOF_ASSERT_NO_MESSAGE(condition)\
