@@ -10,36 +10,18 @@ using Vector = std::vector<T>;
 using String = std::string;
 
 
-struct QueueFamilyIndices
-{
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
-
-    bool isComplete() const
-    {
-        return graphicsFamily.has_value() && presentFamily.has_value();
-    }
-};
-
-struct SwapChainSupportDetails
-{
-    vk::SurfaceCapabilitiesKHR capabilities;
-    Vector<vk::SurfaceFormatKHR> formats;
-    Vector<vk::PresentModeKHR> presentModes;
-};
-
-
+// check a result from an expression with no return value except the vkresult, assert if error. Will evaluate the expression even in retail
 #define CHECK_VKRESULT(result)\
-    BOF_ASSERT(result == vk::Result::eSuccess, "bad vkresult: %s", vk::to_string(result).c_str());
+    do { vk::Result r = (vk::Result)(result);\
+    BOF_ASSERT(r == vk::Result::eSuccess, "bad vkresult: %s", vk::to_string(r).c_str());} while(0)
 
+// check the result from a ResultValue pair, result and return the value. In retail will just return the value
 template<typename VALUE>
 VALUE checkVkResult(const vk::ResultValue<VALUE>& resultValue)
 {
-    CHECK_VKRESULT(resultValue.result);
+    BOF_ASSERT(resultValue.result == vk::Result::eSuccess, "bad vkresult: %s", vk::to_string(resultValue.result).c_str());
     return resultValue.value;
 }
-
-
 
 
 
@@ -80,23 +62,16 @@ public:
         }
     }
 
-    static SwapChainSupportDetails querySwapChainSupport(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface)
-    {
-        SwapChainSupportDetails details;
-        details.capabilities = checkVkResult(physicalDevice.getSurfaceCapabilitiesKHR(surface));
-        details.formats = checkVkResult(physicalDevice.getSurfaceFormatsKHR(surface));
-        details.presentModes = checkVkResult(physicalDevice.getSurfacePresentModesKHR(surface));
-
-        return details;
-    }
-
     static bool isDeviceSuitable(
         const vk::PhysicalDevice& physicalDevice, 
         const vk::SurfaceKHR& surface,
         const Vector<const char*>& deviceExtensions)
     {
-        const QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
-        if (!indices.isComplete())
+        uint32_t resultGraphicsFamily = UINT32_MAX;
+        uint32_t resultPresentFamily = UINT32_MAX;
+
+        const bool foundGoodQueueFamilies = findQueueFamilies(physicalDevice, surface, resultGraphicsFamily, resultPresentFamily);
+        if (!foundGoodQueueFamilies)
         {
             return false;
         }
@@ -113,13 +88,14 @@ public:
             return false;
         }
 
-        const SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice, surface);
-
-        if (swapChainSupport.formats.empty())
+        const Vector<vk::SurfaceFormatKHR> formats = checkVkResult(physicalDevice.getSurfaceFormatsKHR(surface));
+        if (formats.empty())
         {
             return false;
         }
-        if (swapChainSupport.presentModes.empty())
+
+        const Vector<vk::PresentModeKHR> presentModes = checkVkResult(physicalDevice.getSurfacePresentModesKHR(surface));
+        if (presentModes.empty())
         {
             return false;
         }
@@ -182,34 +158,41 @@ public:
         return requiredExtensions.empty();
     }
 
-    static QueueFamilyIndices findQueueFamilies(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface)
+    static bool findQueueFamilies(
+        const vk::PhysicalDevice& physicalDevice, 
+        const vk::SurfaceKHR& surface,
+        // output
+        uint32_t& resultGraphicsFamily, 
+        uint32_t& resultPresentFamily)
     {
-        QueueFamilyIndices indices;
+        resultGraphicsFamily = UINT32_MAX;
+        resultPresentFamily = UINT32_MAX;
 
         const Vector<vk::QueueFamilyProperties> queueFamilies = physicalDevice.getQueueFamilyProperties();
 
-        int i = 0;
-        for (const vk::QueueFamilyProperties& queueFamily : queueFamilies)
+        for (uint32_t i{0}; i < (uint32_t)queueFamilies.size(); i++)
         {
+            const vk::QueueFamilyProperties& queueFamily = queueFamilies[i];
+
             if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
             {
-                indices.graphicsFamily = i;
+                resultGraphicsFamily = i;
             }
 
             if (physicalDevice.getSurfaceSupportKHR(i, surface))
             {
-                indices.presentFamily = i;
+                resultPresentFamily = i;
             }
 
-            if (indices.isComplete()) {
-                break;
+            if (resultGraphicsFamily != UINT32_MAX &&
+                resultPresentFamily != UINT32_MAX)
+            {
+                return true;
             }
-
-            i++;
         }
-
-        return indices;
+        return false;
     }
+
 
     static Vector<const char*> getRequiredExtensions(bool enableValidation)
     {
@@ -288,28 +271,6 @@ public:
         }
 
         return bestMode;
-    }
-
-    static vk::Extent2D chooseSwapExtent(
-        const vk::SurfaceCapabilitiesKHR& capabilities,
-        GLFWwindow* window)
-    {
-        if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
-        {
-            return capabilities.currentExtent;
-        }
-        else
-        {
-            int width, height;
-            glfwGetFramebufferSize(window, &width, &height);
-
-            vk::Extent2D actualExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
-
-            actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-            actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-
-            return actualExtent;
-        }
     }
 
     static Vector<char> readFile(const std::string& filename)

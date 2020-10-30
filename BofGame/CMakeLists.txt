@@ -1,7 +1,8 @@
 
 cmake_minimum_required(VERSION 3.18)
 
-project(BofGame VERSION 1.0)
+set(TargetName BofGame)
+project(${TargetName} VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -26,14 +27,17 @@ endforeach()
 
 
 
-add_executable(BofGame ${_source_list})
+add_executable(${TargetName} ${_source_list})
 
-target_precompile_headers(BofGame PRIVATE stdafx.h)
+target_precompile_headers(${TargetName} PRIVATE stdafx.h)
 
-target_link_libraries(BofGame LINK_PUBLIC BofEngine)
+target_link_libraries(${TargetName} LINK_PUBLIC BofEngine)
 
 
-set_target_properties(BofGame PROPERTIES
+set_target_properties(${TargetName} PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+
+target_compile_options(${TargetName} PRIVATE /W4 /WX)
 
 

@@ -127,7 +127,7 @@ private:
 
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-            m_window = glfwCreateWindow(800, 600, "Bof Engine", nullptr, nullptr);
+            m_window = glfwCreateWindow(m_width, m_height, "Bof Engine", nullptr, nullptr);
             glfwSetWindowUserPointer(m_window, this);
             glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
         }
@@ -213,10 +213,17 @@ private:
         {
             PROFILE(createLogicalDevice);
 
-            QueueFamilyIndices indices = VulkanHelpers::findQueueFamilies(m_physicalDevice, m_surface);
+            VulkanHelpers::findQueueFamilies(
+                m_physicalDevice, m_surface, 
+                // output
+                m_graphicsQueueFamilyIndex, m_presentQueueFamilyIndex);
 
             // probably the same
-            const std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+            const std::set<uint32_t> uniqueQueueFamilies = 
+            {
+                m_graphicsQueueFamilyIndex,
+                m_presentQueueFamilyIndex
+            };
 
             // just one queue per queue family
             const Vector<float> queuePriorities = { 1.0f };
@@ -244,17 +251,15 @@ private:
 
             m_device = m_physicalDevice.createDeviceUnique(deviceCreateInfo);
 
-            m_graphicsQueue = m_device->getQueue(indices.graphicsFamily.value(), 0);
-            m_presentQueue = m_device->getQueue(indices.presentFamily.value(), 0);
+            m_graphicsQueue = m_device->getQueue(m_graphicsQueueFamilyIndex, 0);
+            m_presentQueue = m_device->getQueue(m_presentQueueFamilyIndex, 0);
         }
         {
             PROFILE(createCommandPool);
-            QueueFamilyIndices queueFamilyIndices = VulkanHelpers::findQueueFamilies(
-                m_physicalDevice, m_surface);
 
-            VkCommandPoolCreateInfo poolInfo = {};
-            poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-            poolInfo.flags = 0;
+            vk::CommandPoolCreateInfo poolInfo{};
+            poolInfo.queueFamilyIndex = m_graphicsQueueFamilyIndex;
+            poolInfo.flags = vk::CommandPoolCreateFlags{};
 
             m_commandPool = checkVkResult(m_device->createCommandPool(poolInfo));
         }
@@ -430,11 +435,6 @@ private:
 
             m_descriptorSetLayout = checkVkResult(m_device->createDescriptorSetLayout(layoutInfo));
         }
-        {
-            PROFILE(initImgui);
-            IMGUI_CHECKVERSION();
-        }
-
 
 
 
@@ -442,6 +442,11 @@ private:
 
 
         createSwapchainAndRelatedThings();
+
+
+
+        initImgui();
+
     }
 
 
@@ -456,36 +461,55 @@ private:
         {
             PROFILE(createSwapchain);
 
-            const SwapChainSupportDetails swapchainSupport = VulkanHelpers::querySwapChainSupport(m_physicalDevice, m_surface);
+            const Vector<vk::SurfaceFormatKHR> formats = checkVkResult(m_physicalDevice.getSurfaceFormatsKHR(m_surface));
+            const Vector<vk::PresentModeKHR> presentModes = checkVkResult(m_physicalDevice.getSurfacePresentModesKHR(m_surface));
+            vk::SurfaceCapabilitiesKHR capabilities = checkVkResult(m_physicalDevice.getSurfaceCapabilitiesKHR(m_surface));
 
             vk::SwapchainCreateInfoKHR swapchainCreateInfo{};
             swapchainCreateInfo.surface = m_surface;
 
-            uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
-            if (swapchainSupport.capabilities.maxImageCount > 0 &&
-                imageCount > swapchainSupport.capabilities.maxImageCount)
+            uint32_t imageCount = capabilities.minImageCount + 1;
+            if (capabilities.maxImageCount > 0 &&
+                imageCount > capabilities.maxImageCount)
             {
-                imageCount = swapchainSupport.capabilities.maxImageCount;
+                imageCount = capabilities.maxImageCount;
             }
             swapchainCreateInfo.minImageCount = imageCount;
 
-            const vk::SurfaceFormatKHR surfaceFormat = VulkanHelpers::chooseSwapSurfaceFormat(swapchainSupport.formats);
+            const vk::SurfaceFormatKHR surfaceFormat = VulkanHelpers::chooseSwapSurfaceFormat(formats);
             m_swapchainImageFormat = surfaceFormat.format;
             swapchainCreateInfo.imageFormat = m_swapchainImageFormat;
 
             swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
 
-            m_swapchainExtent = VulkanHelpers::chooseSwapExtent(swapchainSupport.capabilities, m_window);
+
+            if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+            {
+                m_swapchainExtent = capabilities.currentExtent;
+            }
+            else
+            {
+                glfwGetFramebufferSize(m_window, &m_width, &m_height);
+                m_swapchainExtent = vk::Extent2D{
+                    std::clamp((uint32_t)m_width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
+                    std::clamp((uint32_t)m_height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height) };                
+            }
+            m_width = m_swapchainExtent.width;
+            m_height = m_swapchainExtent.height;
+
             swapchainCreateInfo.imageExtent = m_swapchainExtent;
 
             swapchainCreateInfo.imageArrayLayers = 1;
 
             swapchainCreateInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;
 
-            QueueFamilyIndices indices = VulkanHelpers::findQueueFamilies(m_physicalDevice, m_surface);
-            uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
-
-            if (indices.graphicsFamily != indices.presentFamily)
+            uint32_t queueFamilyIndices[] = 
+            {
+                m_graphicsQueueFamilyIndex,
+                m_presentQueueFamilyIndex
+            };
+            
+            if (m_graphicsQueueFamilyIndex != m_presentQueueFamilyIndex)
             {
                 swapchainCreateInfo.imageSharingMode = vk::SharingMode::eConcurrent;
                 swapchainCreateInfo.queueFamilyIndexCount = 2;
@@ -496,10 +520,10 @@ private:
                 swapchainCreateInfo.imageSharingMode = vk::SharingMode::eExclusive;
             }
 
-            swapchainCreateInfo.preTransform = swapchainSupport.capabilities.currentTransform;
+            swapchainCreateInfo.preTransform = capabilities.currentTransform;
             swapchainCreateInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
 
-            const vk::PresentModeKHR presentMode = VulkanHelpers::chooseSwapPresentMode(swapchainSupport.presentModes);
+            const vk::PresentModeKHR presentMode = VulkanHelpers::chooseSwapPresentMode(presentModes);
             swapchainCreateInfo.presentMode = presentMode;
 
             swapchainCreateInfo.clipped = VK_TRUE;
@@ -509,15 +533,15 @@ private:
             m_swapchain = checkVkResult(m_device->createSwapchainKHR(swapchainCreateInfo));
 
             m_swapchainImages = checkVkResult(m_device->getSwapchainImagesKHR(m_swapchain));
-
+            m_swapchainImageCount = (uint32_t)m_swapchainImages.size();
         }
 
         {
             PROFILE(createSwapchainImageViews);
 
-            m_swapchainImageViews.resize(m_swapchainImages.size());
+            m_swapchainImageViews.resize(m_swapchainImageCount);
 
-            for (size_t i = 0; i < m_swapchainImages.size(); i++)
+            for (size_t i = 0; i < m_swapchainImageCount; i++)
             {
                 const uint32_t mipLevelsJustOne = 1;
                 m_swapchainImageViews[i] = VulkanHelpers::createImageView(
@@ -579,7 +603,11 @@ private:
                 resolveAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
 
                 resolveAttachment.initialLayout = vk::ImageLayout::eUndefined;
-                resolveAttachment.finalLayout = vk::ImageLayout::ePresentSrcKHR;
+
+                // since imgui will be presenting, we are now coloroptimal instead
+                //resolveAttachment.finalLayout = vk::ImageLayout::ePresentSrcKHR;
+                resolveAttachment.finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
+
             }
 
             renderPassInfo.setAttachments(attachments);
@@ -822,11 +850,11 @@ private:
 
         {
             PROFILE(createFramebuffers);
-            m_swapchainFramebuffers.resize(m_swapchainImageViews.size());
+            m_swapchainFramebuffers.resize(m_swapchainImageCount);
 
-            for (size_t i = 0; i < m_swapchainImageViews.size(); i++)
+            for (size_t i = 0; i < m_swapchainImageCount; i++)
             {
-                vk::FramebufferCreateInfo framebufferInfo = {};
+                vk::FramebufferCreateInfo framebufferInfo{};
                 framebufferInfo.renderPass = m_renderPass;
 
                 std::array<vk::ImageView, m_attachmentCount> attachments;
@@ -848,10 +876,10 @@ private:
 
             const vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
 
-            m_uniformBuffers.resize(m_swapchainImages.size());
-            m_uniformBuffersMemory.resize(m_swapchainImages.size());
+            m_uniformBuffers.resize(m_swapchainImageCount);
+            m_uniformBuffersMemory.resize(m_swapchainImageCount);
 
-            for (size_t i = 0; i < m_swapchainImages.size(); i++)
+            for (size_t i = 0; i < m_swapchainImageCount; i++)
             {
                 VulkanHelpers::createBuffer(
                     bufferSize,
@@ -867,25 +895,23 @@ private:
         {
             PROFILE(createDescriptorPool);
 
-            uint32_t swapchainImagesCount = static_cast<uint32_t>(m_swapchainImages.size());
-
             Vector<vk::DescriptorPoolSize> poolSizes;
             {
                 auto& uniformBufferPoolSize = poolSizes.emplace_back(vk::DescriptorPoolSize{});
                 uniformBufferPoolSize.type = vk::DescriptorType::eUniformBuffer;
-                uniformBufferPoolSize.descriptorCount = swapchainImagesCount;
+                uniformBufferPoolSize.descriptorCount = m_swapchainImageCount;
             }
             {
                 auto& samplerPoolSize = poolSizes.emplace_back(vk::DescriptorPoolSize{});
                 samplerPoolSize.type = vk::DescriptorType::eCombinedImageSampler;
-                samplerPoolSize.descriptorCount = swapchainImagesCount;
+                samplerPoolSize.descriptorCount = m_swapchainImageCount;
             }
 
             vk::DescriptorPoolCreateInfo poolInfo{};
             poolInfo.setPoolSizes(poolSizes);
-            poolInfo.maxSets = swapchainImagesCount;
+            poolInfo.maxSets = m_swapchainImageCount;
 
-            m_descriptorPool = checkVkResult(m_device->createDescriptorPool(poolInfo, nullptr));
+            m_descriptorPool = checkVkResult(m_device->createDescriptorPool(poolInfo));
         }
 
         {
@@ -895,12 +921,12 @@ private:
 
             allocInfo.descriptorPool = m_descriptorPool;
 
-            Vector<vk::DescriptorSetLayout> layouts(m_swapchainImages.size(), m_descriptorSetLayout);
+            Vector<vk::DescriptorSetLayout> layouts(m_swapchainImageCount, m_descriptorSetLayout);
             allocInfo.setSetLayouts(layouts);
 
             m_descriptorSets = checkVkResult(m_device->allocateDescriptorSets(allocInfo));
 
-            for (size_t i = 0; i < m_swapchainImages.size(); i++)
+            for (size_t i = 0; i < m_swapchainImageCount; i++)
             {
                 Vector<vk::WriteDescriptorSet> descriptorWrites;
 
@@ -940,12 +966,10 @@ private:
         {
             PROFILE(createCommandBuffers);
 
-            m_commandBuffers.resize(m_swapchainFramebuffers.size());
-
-            vk::CommandBufferAllocateInfo allocInfo = {};
+            vk::CommandBufferAllocateInfo allocInfo{};
             allocInfo.commandPool = m_commandPool;
             allocInfo.level = vk::CommandBufferLevel::ePrimary;
-            allocInfo.commandBufferCount = (uint32_t)m_commandBuffers.size();
+            allocInfo.commandBufferCount = m_swapchainImageCount;
 
             m_commandBuffers = checkVkResult(m_device->allocateCommandBuffers(allocInfo));
 
@@ -957,7 +981,7 @@ private:
                 beginInfo.flags = vk::CommandBufferUsageFlagBits::eSimultaneousUse;
                 beginInfo.pInheritanceInfo = nullptr;
 
-                commandBuffer.begin(beginInfo);
+                CHECK_VKRESULT(commandBuffer.begin(beginInfo));
 
                 vk::RenderPassBeginInfo renderPassInfo = {};
                 renderPassInfo.renderPass = m_renderPass;
@@ -1004,10 +1028,154 @@ private:
 
 
                 commandBuffer.endRenderPass();
-                commandBuffer.end();
+                CHECK_VKRESULT(commandBuffer.end());
             }
         }
- 
+
+
+
+        // ?
+        //ImGui_ImplVulkan_SetMinImageCount(2);
+
+    }
+
+    void initImgui()
+    {
+        PROFILE(initImgui);
+        IMGUI_CHECKVERSION();
+
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        BOF_UNUSED(io);
+
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+
+        ImGui::StyleColorsDark();
+
+        ImGui_ImplGlfw_InitForVulkan(m_window, true);
+        ImGui_ImplVulkan_InitInfo initInfo{};
+        initInfo.Instance = m_instance.get();
+        initInfo.PhysicalDevice = m_physicalDevice;
+        initInfo.Device = m_device.get();
+        initInfo.QueueFamily = m_graphicsQueueFamilyIndex;
+        initInfo.Queue = m_graphicsQueue;
+        initInfo.PipelineCache = nullptr;
+
+        // Create Descriptor Pool for imgui
+        
+        vk::DescriptorPoolCreateInfo poolCreateInfo{};
+        poolCreateInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
+        Vector<vk::DescriptorPoolSize> poolSizes =
+        {
+            { vk::DescriptorType::eSampler, 1000},
+            { vk::DescriptorType::eCombinedImageSampler, 1000 },
+            { vk::DescriptorType::eSampledImage, 1000 },
+            { vk::DescriptorType::eStorageImage, 1000 },
+            { vk::DescriptorType::eUniformTexelBuffer, 1000 },
+            { vk::DescriptorType::eStorageTexelBuffer, 1000 },
+            { vk::DescriptorType::eUniformBuffer, 1000 },
+            { vk::DescriptorType::eStorageBuffer, 1000 },
+            { vk::DescriptorType::eUniformBufferDynamic, 1000 },
+            { vk::DescriptorType::eStorageBufferDynamic, 1000 },
+            { vk::DescriptorType::eInputAttachment, 1000 }
+        };
+        poolCreateInfo.maxSets = 1000 * (uint32_t)poolSizes.size();
+        poolCreateInfo.setPoolSizes(poolSizes);
+        m_imguiDescriptorPool = checkVkResult(m_device->createDescriptorPool(poolCreateInfo));
+        
+        initInfo.DescriptorPool = m_imguiDescriptorPool;
+
+        initInfo.Allocator = nullptr;
+        initInfo.MinImageCount = 2;
+        initInfo.ImageCount = m_swapchainImageCount;
+        initInfo.CheckVkResultFn = [](VkResult result) { CHECK_VKRESULT(result); };
+
+        // make imgui renderpass
+        vk::RenderPassCreateInfo renderPassInfo{};
+
+        Vector<vk::AttachmentDescription> attachments;
+        auto& attachment = attachments.emplace_back(vk::AttachmentDescription{});
+        attachment.format = m_swapchainImageFormat;
+        attachment.samples = vk::SampleCountFlagBits::e1;
+        attachment.loadOp = vk::AttachmentLoadOp::eLoad;
+        attachment.storeOp = vk::AttachmentStoreOp::eStore;
+        attachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+        attachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+        attachment.initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+        attachment.finalLayout = vk::ImageLayout::ePresentSrcKHR;
+
+        renderPassInfo.setAttachments(attachments);
+
+        Vector<vk::AttachmentReference> colorAttachmentReferences;
+        auto& colorAttachmentRef = colorAttachmentReferences.emplace_back(vk::AttachmentReference{});
+        colorAttachmentRef.attachment = 0;
+        colorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
+
+        Vector<vk::SubpassDescription> subpasses;
+        auto& subpass = subpasses.emplace_back(vk::SubpassDescription{});
+        subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+        subpass.setColorAttachments(colorAttachmentReferences);
+
+        renderPassInfo.setSubpasses(subpasses);
+
+        Vector<vk::SubpassDependency> dependencies;
+        auto& dependency = dependencies.emplace_back(vk::SubpassDependency{});
+        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        dependency.dstSubpass = 0;
+        dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        dependency.srcAccessMask = vk::AccessFlagBits{}; // or vk::AccessFlagBits::eColorAttachmentWrite;
+        dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+
+        renderPassInfo.setDependencies(dependencies);
+
+        m_imguiRenderPass = checkVkResult(m_device->createRenderPass(renderPassInfo));
+
+        ImGui_ImplVulkan_Init(&initInfo, m_imguiRenderPass);
+
+
+
+
+
+        vk::CommandPoolCreateInfo poolInfo{};
+        poolInfo.queueFamilyIndex = m_graphicsQueueFamilyIndex;
+        poolInfo.flags |= vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+        m_imguiCommandPool = checkVkResult(m_device->createCommandPool(poolInfo));
+
+        const vk::CommandBuffer fontCommandBuffer = VulkanHelpers::beginSingleTimeCommands(m_device, m_imguiCommandPool);
+        ImGui_ImplVulkan_CreateFontsTexture(fontCommandBuffer);
+        VulkanHelpers::endSingleTimeCommands(fontCommandBuffer, m_graphicsQueue, m_device, m_imguiCommandPool);
+        ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+
+        vk::CommandBufferAllocateInfo allocInfo{};
+        allocInfo.level = vk::CommandBufferLevel::ePrimary;
+        allocInfo.commandPool = m_imguiCommandPool;
+        allocInfo.commandBufferCount = m_swapchainImageCount;
+
+        m_imguiCommandBuffers = checkVkResult(m_device->allocateCommandBuffers(allocInfo));
+
+        m_imguiFramebuffers.resize(m_swapchainImageCount);
+
+        for (size_t i = 0; i < m_swapchainImageCount; i++)
+        {
+            vk::FramebufferCreateInfo framebufferInfo{};
+
+            framebufferInfo.renderPass = m_imguiRenderPass;
+
+            std::array<vk::ImageView, 1> fbAttachments;
+            fbAttachments[0] = m_swapchainImageViews[i];
+            framebufferInfo.setAttachments(fbAttachments);
+
+            framebufferInfo.width = m_swapchainExtent.width;
+            framebufferInfo.height = m_swapchainExtent.height;
+            framebufferInfo.layers = 1;
+
+            m_imguiFramebuffers[i] = checkVkResult(m_device->createFramebuffer(framebufferInfo));
+        }
+
     }
 
 
@@ -1075,7 +1243,7 @@ private:
         m_device->destroyPipelineLayout(m_pipelineLayout);
         m_device->destroyRenderPass(m_renderPass);
 
-        for (size_t i = 0; i < m_swapchainImageViews.size(); i++)
+        for (size_t i = 0; i < m_swapchainImageCount; i++)
         {
             m_device->destroyImageView(m_swapchainImageViews[i]);
 
@@ -1091,14 +1259,12 @@ private:
 
     void recreateSwapchain()
     {
-        int width = 0;
-        int height = 0;
-        glfwGetFramebufferSize(m_window, &width, &height);
+        glfwGetFramebufferSize(m_window, &m_width, &m_width);
 
-        while (width == 0 || height == 0)
+        while (m_width == 0 || m_height == 0)
         {
             glfwWaitEvents();
-            glfwGetFramebufferSize(m_window, &width, &height);
+            glfwGetFramebufferSize(m_window, &m_width, &m_width);
         }
 
         m_device->waitIdle();
@@ -1137,11 +1303,13 @@ private:
 
         m_device->resetFences(currentFences);
 
+        vk::Semaphore& imageAvailableSemaphore = m_imageAvailableSemaphores[m_currentFrame];
+        vk::Semaphore& renderFinishedSemaphore = m_renderFinishedSemaphores[m_currentFrame];
 
         const vk::ResultValue<uint32_t> acquireResultValue = m_device->acquireNextImageKHR(
             m_swapchain,
             std::numeric_limits<uint64_t>::max(),
-            m_imageAvailableSemaphores[m_currentFrame],
+            imageAvailableSemaphore,
             nullptr
         );
 
@@ -1162,23 +1330,92 @@ private:
 
         updateUniformBuffer(imageIndex);
 
+
+
+        Vector<vk::CommandBuffer> commandBuffers;
+
+
+        commandBuffers.push_back(m_commandBuffers[imageIndex]);
+
+
+
+
+        // imgui
+        {
+            ImGui_ImplVulkan_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+
+            ImGui::NewFrame();
+            ImGui::ShowDemoWindow();
+            ImGui::Render();
+
+            ImDrawData* drawData = ImGui::GetDrawData();
+
+            CHECK_VKRESULT(m_device->resetCommandPool(m_imguiCommandPool, vk::CommandPoolResetFlags{}));
+
+            vk::CommandBufferBeginInfo commandBeginInfo{};
+            commandBeginInfo.flags |= vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+
+            vk::CommandBuffer& commandBuffer = m_imguiCommandBuffers[imageIndex];
+
+
+            CHECK_VKRESULT(commandBuffer.begin(commandBeginInfo));
+
+            vk::RenderPassBeginInfo renderPassInfo{};
+            renderPassInfo.renderPass = m_imguiRenderPass;
+            renderPassInfo.framebuffer = m_imguiFramebuffers[imageIndex];
+
+            renderPassInfo.renderArea.offset = vk::Offset2D{ 0, 0 };
+            renderPassInfo.renderArea.extent = m_swapchainExtent;
+
+            std::array<vk::ClearValue, 1> clearValues{};
+
+            clearValues[0].color = std::array<float, 4>{ 0.0f, 0.0f, 0.0f, 1.0f };
+
+            renderPassInfo.setClearValues(clearValues);
+
+            commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+
+            ImGui_ImplVulkan_RenderDrawData(drawData, commandBuffer);
+
+            commandBuffer.endRenderPass();
+            CHECK_VKRESULT(commandBuffer.end());
+
+            commandBuffers.push_back(commandBuffer);
+        }
+
+
+
+
+
         Vector<vk::SubmitInfo> submitInfos;
         vk::SubmitInfo submitInfo = {};
-        Vector<vk::Semaphore> waitSemaphores = { m_imageAvailableSemaphores[m_currentFrame] };
+        Vector<vk::Semaphore> waitSemaphores = { imageAvailableSemaphore };
         submitInfo.setWaitSemaphores(waitSemaphores);
 
         Vector<vk::PipelineStageFlags> waitDstStageMasks = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
         submitInfo.setWaitDstStageMask(waitDstStageMasks);
 
-        Vector<vk::CommandBuffer> commandBuffers = { m_commandBuffers[imageIndex] };
         submitInfo.setCommandBuffers(commandBuffers);
 
-        Vector<vk::Semaphore> signalSemaphores = { m_renderFinishedSemaphores[m_currentFrame] };
+        Vector<vk::Semaphore> signalSemaphores = { renderFinishedSemaphore };
         submitInfo.setSignalSemaphores(signalSemaphores);
 
         submitInfos.push_back(submitInfo);
 
+
+
+
+
+
+
+
+
         m_graphicsQueue.submit(submitInfos, m_inFlightFences[m_currentFrame]);
+
+
+        drawImguiFrame();
+
 
 
         vk::PresentInfoKHR presentInfo = {};
@@ -1210,6 +1447,14 @@ private:
 
 
         m_currentFrame = (m_currentFrame + 1) % m_maxFramesInFlight;
+    }
+
+
+
+
+
+    void drawImguiFrame()
+    {
     }
 
     void updateUniformBuffer(uint32_t currentImage)
@@ -1309,13 +1554,19 @@ private:
     vk::PhysicalDevice m_physicalDevice;
     vk::UniqueDevice m_device;
 
+    uint32_t m_graphicsQueueFamilyIndex = UINT32_MAX;
+    uint32_t m_presentQueueFamilyIndex = UINT32_MAX;
+
     vk::Queue m_graphicsQueue;
     vk::Queue m_presentQueue;
 
     vk::SwapchainKHR m_swapchain = nullptr;
     Vector<vk::Image> m_swapchainImages;
+    uint32_t m_swapchainImageCount = 0;
     vk::Format m_swapchainImageFormat = vk::Format::eUndefined;
     vk::Extent2D m_swapchainExtent;
+    int m_width = 800;
+    int m_height = 600;
 
     Vector<vk::ImageView> m_swapchainImageViews;
 
@@ -1351,6 +1602,12 @@ private:
 
     vk::DescriptorPool m_descriptorPool;
     Vector<vk::DescriptorSet> m_descriptorSets;
+
+    vk::DescriptorPool m_imguiDescriptorPool;
+    vk::RenderPass m_imguiRenderPass;
+    vk::CommandPool m_imguiCommandPool;
+    std::vector<vk::CommandBuffer, std::allocator<vk::CommandBuffer>> m_imguiCommandBuffers;
+    Vector<vk::Framebuffer> m_imguiFramebuffers;
 
     uint32_t m_mipLevels = 1;
     vk::Image m_textureImage;

@@ -9,6 +9,9 @@
 
 
 #define BOF_UNUSED(x) do {(void)sizeof(x);} while(0)
+#define BOF_UNUSED2(x, y) do {(void)sizeof(x);(void)sizeof(y);} while(0)
+#define BOF_UNUSED3(x, y, z) do {(void)sizeof(x);(void)sizeof(y);(void)sizeof(z);} while(0)
+#define BOF_UNUSED4(x, y, z, w) do {(void)sizeof(x);(void)sizeof(y);(void)sizeof(z);(void)sizeof(w);} while(0)
 
 // this is set only by release. Which means final/retail...
 #ifndef NO_BOF_ASSERTS
@@ -16,7 +19,7 @@
 // This should be true only when testing a build without a debugger attached
 // so artists automatically skip asserts but still log them.
 // Automated tools could check logs and warn the adequate people.
-// todo: Pick this up from the commandline.
+// todo: Pick this up from the commandline?
 inline bool g_BofAssertsNoDebuggerLogButContinue = false;
 
 #define BOF_HALT 0
@@ -110,9 +113,9 @@ inline int ReportAssertFailure(
 
 #else // BOF_ASSERTS_ENABLE
 
-#define BOF_ASSERT_NO_MESSAGE(x) do {(void)sizeof(x);} while(0)
-#define BOF_ASSERT(x, msg, ...) do {(void)sizeof(x);(void)sizeof(msg);} while(0)
-#define BOF_FAIL(msg, ...) do {(void)sizeof(msg);} while(0)
+#define BOF_ASSERT_NO_MESSAGE(x) BOF_UNUSED(x)
+#define BOF_ASSERT(x, msg, ...) BOF_UNUSED2(x, msg)
+#define BOF_FAIL(msg, ...) BOF_UNUSED(msg)
 
 
 

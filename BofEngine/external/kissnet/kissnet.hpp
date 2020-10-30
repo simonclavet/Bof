@@ -150,7 +150,7 @@ inline const char* inet_ntop(int af, const void* src, char* dst, socklen_t size)
 	} addr;
 	int res;
 	memset(&addr, 0, sizeof(addr));
-	addr.sa.sa_family = af;
+	addr.sa.sa_family = (ADDRESS_FAMILY)af;
 	if (af == AF_INET6)
 	{
 		memcpy(&addr.sai6.sin6_addr, src, sizeof(addr.sai6.sin6_addr));

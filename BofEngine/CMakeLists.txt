@@ -1,7 +1,9 @@
 
 cmake_minimum_required(VERSION 3.18)
 
-project(BofEngine VERSION 1.0)
+set(TargetName BofEngine)
+
+project(${TargetName} VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -21,6 +23,7 @@ file(GLOB_RECURSE _source_list
     "${_src_root_path}/*.cpp"
     "${_src_root_path}/*.h"
     "${_src_root_path}/*.hpp"
+    "${_src_root_path}/*.natvis"
     )
 
 foreach(_source IN ITEMS ${_source_list})
@@ -30,18 +33,20 @@ foreach(_source IN ITEMS ${_source_list})
     source_group("${_group_path}" FILES "${_source}")
 endforeach()
 
-add_library(BofEngine
+add_library(${TargetName}
     ${_source_list}
     )
 
 
-target_include_directories(BofEngine PUBLIC 
+target_include_directories(${TargetName} PUBLIC 
     "${project_dir}"
     "${include_dirs}"
     )
 
-target_link_libraries(BofEngine PUBLIC
+target_link_libraries(${TargetName} PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/external/vulkan/Lib/vulkan-1.lib"
     debug "${CMAKE_CURRENT_SOURCE_DIR}/external/glfw/lib/Debug/glfw3.lib"
     optimized "${CMAKE_CURRENT_SOURCE_DIR}/external/glfw/lib/RelWithDebInfo/glfw3.lib"
     )
+
+target_compile_options(${TargetName} PRIVATE /W4 /WX)
