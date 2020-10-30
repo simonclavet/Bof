@@ -134,7 +134,7 @@ private:
         {
             PROFILE(createInstance);
 
-            if (m_enableValidationLayers)
+            if constexpr (m_enableValidationLayers)
             {
                 BOF_ASSERT(VulkanHelpers::checkLayerSupport(m_validationLayers), 
                     "validation layers requested, but not available");
@@ -152,7 +152,7 @@ private:
             const Vector<const char*> extensions = VulkanHelpers::getRequiredExtensions(m_enableValidationLayers);
             instanceCreateInfo.setPEnabledExtensionNames(extensions);
 
-            if (m_enableValidationLayers)
+            if constexpr (m_enableValidationLayers)
             {
                 instanceCreateInfo.setPEnabledLayerNames(m_validationLayers);
             }
@@ -162,7 +162,7 @@ private:
         {
             PROFILE(setupDebugCallback);
 
-            if (m_enableValidationLayers)
+            if constexpr (m_enableValidationLayers)
             {
                 vk::DebugUtilsMessengerCreateInfoEXT debugUtilsInfo{};
                 debugUtilsInfo.messageSeverity =
@@ -244,7 +244,7 @@ private:
 
             deviceCreateInfo.setPEnabledExtensionNames(m_deviceExtensions);
 
-            if (m_enableValidationLayers)
+            if constexpr(m_enableValidationLayers)
             {
                 deviceCreateInfo.setPEnabledLayerNames(m_validationLayers);
             }
@@ -1351,8 +1351,6 @@ private:
 
             ImDrawData* drawData = ImGui::GetDrawData();
 
-            CHECK_VKRESULT(m_device->resetCommandPool(m_imguiCommandPool, vk::CommandPoolResetFlags{}));
-
             vk::CommandBufferBeginInfo commandBeginInfo{};
             commandBeginInfo.flags |= vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
 
@@ -1542,8 +1540,11 @@ private:
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
-    bool m_enableValidationLayers = true;
-
+#ifdef NO_VALIDATION_LAYERS
+    static constexpr bool m_enableValidationLayers = false;
+#else
+    static constexpr bool m_enableValidationLayers = true;
+#endif
 
     GLFWwindow* m_window = nullptr;
 
@@ -1632,7 +1633,7 @@ private:
 
     Bof::SimpleClock m_clock;
 
-    bool m_showFps = false;
+    bool m_showFps = true;
     RingBuffer<double, 100> m_frameTimes;
 
     double m_frameStartTimeMS = 0.0;

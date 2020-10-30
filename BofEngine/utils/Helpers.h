@@ -12,7 +12,7 @@ using String = std::string;
 
 // check a result from an expression with no return value except the vkresult, assert if error. Will evaluate the expression even in retail
 #define CHECK_VKRESULT(result)\
-    do { vk::Result r = (vk::Result)(result);\
+    do { [[maybe_unused]]vk::Result r = (vk::Result)(result); \
     BOF_ASSERT(r == vk::Result::eSuccess, "bad vkresult: %s", vk::to_string(r).c_str());} while(0)
 
 // check the result from a ResultValue pair, result and return the value. In retail will just return the value

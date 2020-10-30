@@ -21,6 +21,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 # we always use relWithDebugInfo except when debugging very difficult bugs. We ship RELEASE
 # The flag NO_BOF_ASSERTS is only set on RELEASE to get the true max speed
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DNO_BOF_ASSERTS")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DNO_VALIDATION_LAYERS")
 
 add_subdirectory(BofEngine)
 add_subdirectory(BofGame)
