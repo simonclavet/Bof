@@ -25,6 +25,10 @@ inline bool g_BofAssertsNoDebuggerLogButContinue = false;
 #define BOF_HALT 0
 #define BOF_CONTINUE 1
 
+#pragma warning(push)
+
+#pragma warning(disable:4710) // prevent warning function not inlined
+
 inline int ReportAssertFailure(
     const char* condition,
     const char* file,
@@ -64,6 +68,10 @@ inline int ReportAssertFailure(
         return BOF_HALT;
     }
 }
+
+
+#pragma warning(pop)
+
 
 
 

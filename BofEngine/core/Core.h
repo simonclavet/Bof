@@ -1,15 +1,6 @@
 ﻿#pragma once
 
-// In here everything writen by other people, except BofAsserts.h (because my assert is passed to some external stuff).
-// This is expected to go in the precompiled header for the game executable (not the engine lib).
-// Don't put things that could change often here.
-#include "utils/BofAsserts.h"
-
-
-#define VULKAN_HPP_NO_EXCEPTIONS 
-// defining my own assert for vk assert on bad result. Message and result is supposed to be there in the context.
-#define VULKAN_HPP_ASSERT_ON_RESULT(condition) BOF_ASSERT_MSG(condition, "%s %s", message, vk::to_string(result).c_str()) 
-#include <vulkan/vulkan.hpp>
+#define __STDC_WANT_SECURE_LIB__ 1
 
 #include <iostream>
 #include <fstream>
@@ -22,6 +13,20 @@
 #include <set>
 #include <unordered_map>
 
+// In here everything writen by other people, except BofAsserts.h (because my assert is passed to some external stuff).
+// This is expected to go in the precompiled header for the game executable (not the engine lib).
+// Don't put things that could change often here.
+#include "utils/BofAsserts.h"
+
+// don't care about warnings from those
+#pragma warning(push, 0)
+
+#define VULKAN_HPP_NO_EXCEPTIONS 
+// defining my own assert for vk assert on bad result. Message and result is supposed to be there in the context.
+#define VULKAN_HPP_ASSERT_ON_RESULT(condition) BOF_ASSERT_MSG(condition, "%s %s", message, vk::to_string(result).c_str()) 
+#include <vulkan/vulkan.hpp>
+
+
 #include <GLFW/glfw3.h>
 
 #define GLM_FORCE_RADIANS
@@ -29,11 +34,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#pragma warning(push)
-#pragma warning(disable: 4201)
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
-#pragma warning(pop)
 
 #define STBI_ASSERT(condition) BOF_ASSERT_MSG((condition), "stb assert") 
 #include "stb_image.h"
@@ -44,3 +46,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_vulkan.h"
+
+
+
+#pragma warning(pop)
