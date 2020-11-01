@@ -8,7 +8,7 @@
 
 #define VULKAN_HPP_NO_EXCEPTIONS 
 // defining my own assert for vk assert on bad result. Message and result is supposed to be there in the context.
-#define VULKAN_HPP_ASSERT_ON_RESULT(condition) BOF_ASSERT(condition, "%s %s", message, vk::to_string(result).c_str()) 
+#define VULKAN_HPP_ASSERT_ON_RESULT(condition) BOF_ASSERT_MSG(condition, "%s %s", message, vk::to_string(result).c_str()) 
 #include <vulkan/vulkan.hpp>
 
 #include <iostream>
@@ -35,7 +35,7 @@
 #include <glm/gtx/hash.hpp>
 #pragma warning(pop)
 
-#define STBI_ASSERT(condition) BOF_ASSERT((condition), "stb assert") 
+#define STBI_ASSERT(condition) BOF_ASSERT_MSG((condition), "stb assert") 
 #include "stb_image.h"
 
 #include <tiny_obj_loader.h>

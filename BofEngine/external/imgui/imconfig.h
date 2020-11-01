@@ -17,7 +17,7 @@
 
 //---- Define assertion handler. Defaults to calling assert().
 // If your macro uses multiple statements, make sure is enclosed in a 'do { .. } while (0)' block so it can be used as a single statement.
-#define IM_ASSERT(condition) BOF_ASSERT_NO_MESSAGE(condition) 
+#define IM_ASSERT(condition) BOF_ASSERT_MSG(condition, "(imgui assert)") 
 //#define IM_ASSERT(_EXPR)  BOF_ASSERT((_EXPR), "imgui assert")
 //#define IM_ASSERT(_EXPR)  ((void)(_EXPR))     // Disable asserts
 

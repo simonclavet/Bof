@@ -71,7 +71,7 @@ inline int ReportAssertFailure(
 #define BOF_DEBUG_BREAK() { __debugbreak(); }
 
 
-#define BOF_ASSERT_NO_MESSAGE(condition)\
+#define BOF_ASSERT(condition)\
     do\
     {\
         if (!(condition))\
@@ -85,7 +85,7 @@ inline int ReportAssertFailure(
     while (0)
 
 
-#define BOF_ASSERT(condition, msg, ...)\
+#define BOF_ASSERT_MSG(condition, msg, ...)\
     do\
     {\
         if (!(condition))\
@@ -113,10 +113,9 @@ inline int ReportAssertFailure(
 
 #else // BOF_ASSERTS_ENABLE
 
-#define BOF_ASSERT_NO_MESSAGE(x) BOF_UNUSED(x)
-#define BOF_ASSERT(x, msg, ...) BOF_UNUSED2(x, msg)
+#define BOF_ASSERT(x) BOF_UNUSED(x)
+#define BOF_ASSERT_MSG(x, msg, ...) BOF_UNUSED2(x, msg)
 #define BOF_FAIL(msg, ...) BOF_UNUSED(msg)
-
 
 
 #endif // BOF_ASSERTS_ENABLE

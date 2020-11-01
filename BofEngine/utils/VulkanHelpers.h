@@ -13,13 +13,13 @@ using String = std::string;
 // check a result from an expression with no return value except the vkresult, assert if error. Will evaluate the expression even in retail
 #define CHECK_VKRESULT(result)\
     do { [[maybe_unused]]vk::Result r = (vk::Result)(result); \
-    BOF_ASSERT(r == vk::Result::eSuccess, "bad vkresult: %s", vk::to_string(r).c_str());} while(0)
+    BOF_ASSERT_MSG(r == vk::Result::eSuccess, "bad vkresult: %s", vk::to_string(r).c_str());} while(0)
 
 // check the result from a ResultValue pair, result and return the value. In retail will just return the value
 template<typename VALUE>
 VALUE checkVkResult(const vk::ResultValue<VALUE>& resultValue)
 {
-    BOF_ASSERT(resultValue.result == vk::Result::eSuccess, "bad vkresult: %s", vk::to_string(resultValue.result).c_str());
+    BOF_ASSERT_MSG(resultValue.result == vk::Result::eSuccess, "bad vkresult: %s", vk::to_string(resultValue.result).c_str());
     return resultValue.value;
 }
 
@@ -152,6 +152,7 @@ public:
         Vector<vk::ExtensionProperties> extensions = physicalDevice.enumerateDeviceExtensionProperties();
         for (const vk::ExtensionProperties& extension : extensions)
         {
+            //std::cout << extension.extensionName << std::endl;
             requiredExtensions.erase(extension.extensionName);
         }
 
@@ -484,7 +485,7 @@ public:
         stbi_uc* pixels = stbi_load(
             filename, &texWidth, &texHeight,
             &texChannels, STBI_rgb_alpha);
-        BOF_ASSERT(pixels != nullptr, "can't load %s", filename);
+        BOF_ASSERT_MSG(pixels != nullptr, "can't load %s", filename);
 
         outMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
@@ -865,7 +866,7 @@ public:
         vk::Buffer& buffer,
         vk::DeviceMemory& bufferMemory)
     {
-        BOF_ASSERT(sourceDataArray.size() > 0, "no verts");
+        BOF_ASSERT_MSG(sourceDataArray.size() > 0, "no verts");
         const vk::DeviceSize bufferSize = sizeof(sourceDataArray[0]) * sourceDataArray.size();
 
         vk::Buffer stagingBuffer;

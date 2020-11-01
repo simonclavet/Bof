@@ -75,8 +75,7 @@ Index of this file:
 
 // Helper Macros
 #ifndef IM_ASSERT
-#define IM_ASSERT(condition) BOF_ASSERT_NO_MESSAGE(condition) 
-
+#define IM_ASSERT(condition) BOF_ASSERT_MSG(condition, "(imgui assert)") 
 //#include <assert.h>
 //int a = 3;
 //#define IM_ASSERT(_EXPR)            assert(_EXPR)                               // You can override the default assert handler by editing imconfig.h
