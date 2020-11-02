@@ -4,12 +4,17 @@
 #pragma warning(disable: 4324) // prevent warning when custum aligning 
 
 #include "utils/VulkanHelpers.h"
+#include "utils/Timer.h"
+#include "utils/BofLog.h"
 
 #include "utils/RingBuffer.h"
 
-#ifdef _DEBUG
-#define IMGUI_VULKAN_DEBUG_REPORT
-#endif
+#include "core/BofEngine.h"
+
+
+//#ifdef _DEBUG
+//#define IMGUI_VULKAN_DEBUG_REPORT
+//#endif
 
 
 struct Vertex
@@ -255,6 +260,17 @@ private:
 
             m_graphicsQueue = m_device->getQueue(m_graphicsQueueFamilyIndex, 0);
             m_presentQueue = m_device->getQueue(m_presentQueueFamilyIndex, 0);
+        }
+        {
+            PROFILE(createMemoryAllocator);
+            BOF_ASSERT(m_device);
+
+            vma::AllocatorCreateInfo allocatorInfo{};
+            allocatorInfo.physicalDevice = m_physicalDevice;
+            allocatorInfo.device = m_device.get();
+            allocatorInfo.instance = m_instance.get();
+
+            m_allocator = checkVkResult(vma::createAllocator(allocatorInfo));
         }
         {
             PROFILE(createCommandPool);
@@ -862,10 +878,29 @@ private:
         }
         {
             PROFILE(createColorResources);
-            BOF_ASSERT(!m_colorImage && !m_colorImageMemory && !m_colorImageView);
+
+            BOF_ASSERT(!m_colorImage && !m_colorImageAllocation && !m_colorImageView);
 
             const vk::Format colorFormat = m_swapchainImageFormat;
             const uint32_t mipLevelsJustOne = 1;
+            //
+            //VulkanHelpers::createImageAndImageView(
+            //    m_swapchainExtent,
+            //    mipLevelsJustOne,
+            //    m_msaaSamples,
+            //    colorFormat,
+            //    vk::ImageTiling::eOptimal,
+            //    vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment,
+            //    vk::MemoryPropertyFlagBits::eDeviceLocal,
+            //    vk::ImageAspectFlagBits::eColor,
+            //    m_physicalDevice,
+            //    m_device,
+            //    // output
+            //    m_colorImage,
+            //    m_colorImageMemory,
+            //    m_colorImageView);
+
+
             VulkanHelpers::createImageAndImageView(
                 m_swapchainExtent,
                 mipLevelsJustOne,
@@ -875,16 +910,18 @@ private:
                 vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment,
                 vk::MemoryPropertyFlagBits::eDeviceLocal,
                 vk::ImageAspectFlagBits::eColor,
-                m_physicalDevice,
                 m_device,
+                m_allocator,
                 // output
                 m_colorImage,
-                m_colorImageMemory,
+                m_colorImageAllocation,
                 m_colorImageView);
+
+
         }
         {
             PROFILE(createDepthResources);
-            BOF_ASSERT(!m_depthImage && !m_depthImageMemory && !m_depthImageView);
+            BOF_ASSERT(!m_depthImage && !m_depthImageAllocation && !m_depthImageView);
 
             const vk::Format depthFormat = VulkanHelpers::findDepthFormat(m_physicalDevice);
             const uint32_t mipLevelsJustOne = 1;
@@ -897,11 +934,11 @@ private:
                 vk::ImageUsageFlagBits::eDepthStencilAttachment,
                 vk::MemoryPropertyFlagBits::eDeviceLocal,
                 vk::ImageAspectFlagBits::eDepth,
-                m_physicalDevice,
                 m_device,
+                m_allocator,
                 // output
                 m_depthImage,
-                m_depthImageMemory,
+                m_depthImageAllocation,
                 m_depthImageView);
 
             VulkanHelpers::transitionImageLayout(
@@ -1287,6 +1324,7 @@ private:
 
         m_instance->destroySurfaceKHR(m_surface); m_surface = nullptr;
 
+        m_allocator.destroy();
         
 
         if (m_enableValidationLayers)
@@ -1317,13 +1355,15 @@ private:
         m_device->destroyRenderPass(m_imguiRenderPass); m_imguiRenderPass = nullptr;
 
         m_swapchainImages.clear();
-        m_device->destroyImageView(m_colorImageView); m_colorImageView = nullptr;
-        m_device->destroyImage(m_colorImage); m_colorImage = nullptr;
-        m_device->freeMemory(m_colorImageMemory); m_colorImageMemory = nullptr;
+
+        m_device->destroyImageView(m_colorImageView); m_colorImageView = nullptr;        
+        m_allocator.destroyImage(m_colorImage, m_colorImageAllocation);
+        m_colorImage = nullptr; m_colorImageAllocation = nullptr;
 
         m_device->destroyImageView(m_depthImageView); m_depthImageView = nullptr;
-        m_device->destroyImage(m_depthImage); m_depthImage = nullptr;
-        m_device->freeMemory(m_depthImageMemory); m_depthImageMemory = nullptr;
+        m_allocator.destroyImage(m_depthImage, m_depthImageAllocation);
+        m_depthImage = nullptr; m_depthImageAllocation = nullptr;
+
 
         for (vk::Framebuffer& framebuffer : m_swapchainFramebuffers)
         {
@@ -1648,6 +1688,8 @@ private:
     vk::PhysicalDevice m_physicalDevice = nullptr;
     vk::UniqueDevice m_device;
 
+    vma::Allocator m_allocator;
+
     uint32_t m_graphicsQueueFamilyIndex = UINT32_MAX;
     uint32_t m_presentQueueFamilyIndex = UINT32_MAX;
 
@@ -1709,13 +1751,22 @@ private:
     vk::ImageView m_textureImageView = nullptr;
     vk::Sampler m_textureSampler = nullptr;
 
+    vk::Image m_depthImageOld = nullptr;
+    vk::DeviceMemory m_depthImageMemoryOld = nullptr;
+    vk::ImageView m_depthImageViewOld = nullptr;
+
     vk::Image m_depthImage = nullptr;
-    vk::DeviceMemory m_depthImageMemory = nullptr;
+    vma::Allocation m_depthImageAllocation = nullptr;
     vk::ImageView m_depthImageView = nullptr;
 
+    //vk::Image m_colorImage = nullptr;
+    //vk::DeviceMemory m_colorImageMemory = nullptr;
+    //vk::ImageView m_colorImageView = nullptr;
+
     vk::Image m_colorImage = nullptr;
-    vk::DeviceMemory m_colorImageMemory = nullptr;
+    vma::Allocation m_colorImageAllocation = nullptr;
     vk::ImageView m_colorImageView = nullptr;
+
 
     vk::SampleCountFlagBits m_msaaSamples = vk::SampleCountFlagBits::e1;
 

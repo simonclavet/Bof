@@ -11,3 +11,11 @@
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
+
+//
+//
+//#define VMA_IMPLEMENTATION
+//#include "VulkanMemoryAllocator/vk_mem_alloc.hpp"
+
+//#define VMA_IMPLEMENTATION
+//#include "VulkanMemoryAllocator/vk_mem_alloc.h"

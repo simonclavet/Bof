@@ -24,7 +24,9 @@
 #define VULKAN_HPP_NO_EXCEPTIONS 
 // defining my own assert for vk assert on bad result. Message and result is supposed to be there in the context.
 #define VULKAN_HPP_ASSERT_ON_RESULT(condition) BOF_ASSERT_MSG(condition, "%s %s", message, vk::to_string(result).c_str()) 
-#include <vulkan/vulkan.hpp>
+#define VMA_ASSERT(condition) BOF_ASSERT(condition) 
+#include <VulkanMemoryAllocator/vk_mem_alloc.hpp>
+//#include <vulkan/vulkan.hpp>
 
 
 #include <GLFW/glfw3.h>

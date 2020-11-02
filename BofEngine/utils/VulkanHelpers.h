@@ -1,6 +1,15 @@
 #pragma once
 
-#include "core/BofEngine.h"
+#include "core/core.h"
+//#include "core/BofEngine.h"
+//#include "utils/Timer.h"
+//#include "utils/BofLog.h"
+//
+//#include "utils/GoodSave.h"
+//#include "utils/HashSortedVector.h"
+//#include "utils/RingBuffer.h"
+
+//#include "utils/VulkanHelpers.h"
 
 
 // sorry.. can't deal with std:: for such basic things, but 'using namespace std' is not a good idea.
@@ -433,6 +442,7 @@ public:
         return checkVkResult(device->createImageView(viewInfo));
     }
 
+
     static void createImageAndImageView(
         const vk::Extent2D& extent,
         const uint32_t& mipLevels,
@@ -442,25 +452,38 @@ public:
         const vk::ImageUsageFlags& imageUsage,
         const vk::MemoryPropertyFlagBits& desiredMemoryProperties,
         const vk::ImageAspectFlags& aspectFlags,
-        const vk::PhysicalDevice& physicalDevice,
         const vk::UniqueDevice& device,
+        const vma::Allocator& allocator,
         // output
         vk::Image& outputImage,
-        vk::DeviceMemory& outputImageMemory,
+        vma::Allocation& outputImageAllocation,
         vk::ImageView& outputImageView)
     {
-        createImage(
-            extent,
-            mipLevels,
-            numSamples,
-            format,
-            tiling,
-            imageUsage,
-            desiredMemoryProperties,
-            physicalDevice,
-            device,
-            outputImage,
-            outputImageMemory);
+        vk::ImageCreateInfo imageInfo{};
+        imageInfo.imageType = vk::ImageType::e2D;
+        imageInfo.setExtent({ extent.width, extent.height, 1 });
+        imageInfo.mipLevels = mipLevels;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = format;
+        imageInfo.tiling = tiling;
+        imageInfo.initialLayout = vk::ImageLayout::eUndefined;
+        imageInfo.usage = imageUsage;
+        imageInfo.sharingMode = vk::SharingMode::eExclusive;
+        imageInfo.samples = numSamples;
+        imageInfo.flags = vk::ImageCreateFlags{};
+
+        vma::AllocationCreateInfo allocInfo{};
+        allocInfo.usage = vma::MemoryUsage::eGpuOnly;
+        allocInfo.requiredFlags = desiredMemoryProperties;
+        allocInfo.preferredFlags = desiredMemoryProperties;
+        allocInfo.flags = vma::AllocationCreateFlagBits::eMapped;
+
+        CHECK_VKRESULT(allocator.createImage(
+            &imageInfo,
+            &allocInfo,
+            &outputImage,
+            &outputImageAllocation,
+            nullptr));
 
         outputImageView = createImageView(
             outputImage,
@@ -469,6 +492,8 @@ public:
             mipLevels,
             device);
     }
+
+
 
     static void createTextureImage(
         const char* filename,
@@ -866,7 +891,7 @@ public:
         vk::Buffer& buffer,
         vk::DeviceMemory& bufferMemory)
     {
-        BOF_ASSERT_MSG(sourceDataArray.size() > 0, "no verts");
+        BOF_ASSERT_MSG(sourceDataArray.size() > 0, "no data");
         const vk::DeviceSize bufferSize = sizeof(sourceDataArray[0]) * sourceDataArray.size();
 
         vk::Buffer stagingBuffer;
