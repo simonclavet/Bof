@@ -15,14 +15,18 @@ StartVisualStudioSolution.bat
 
 Then hit F5.
 
-For now I just reproduced the vulkan tutorial, using the modern cpp bindings vulkan.hpp.
+Using: vulkan, vma, glfw, glm, imgui, spdlog, pods, rapidjson, kissnet, magic_enum, stb_image, tiny_obj_loader.
+
+
+For now I mostly just reproduced the vulkan tutorial, using the modern cpp bindings vulkan.hpp, and VulkanMemoryAllocator.hpp. 
+
 
 I follow the [Carmack coding style](http://number-none.com/blow/blog/programming/2014/09/26/carmack-on-inlined-code.html). 
 This means just a small number of large methods for init and tick, then a bunch of functionnal helpers. 
 Functionnal helpers have some arguments const, some arguments are the results, some arguments are inout (so, not really functionnal). 
-If a method is called only once, it should be either inlined, or made functional.
+If a method is called only once, it can (should?) be inlined, else it should be made (almost) functional.
 
-Some goals:
+Some long term goals and principles of this:
 
 Completelly separate data from procedures (data-oriented-design)
 with an entity-component-system. No data exists outside of a simple plain-old-data component, that can
@@ -35,13 +39,9 @@ cubes. There is only one level.
 
 Concretelly, make a persistent world where players can create, destroy, and move cubes. Cubes have different sizes, from 0.2m to 20m.
 Moving cubes around by picking them and throwing them happens at 60 fps on local machines, but the simulation
-is shared between players that are 200ms away. So we hide the lag with something new.
+is shared between players that are 200ms away. So we hide the lag with something new:
 
-
-
-Come up with a new way to think about multiplayer engines: 'Relativistic deterministic lockstep with rollback'
-pushed to the limit with a fine grained distributed physics engine 
-that is shared by an unlimited number of players in a large persistant world. 
+'Persistant relativistic deterministic lockstep with rollback'
 
 The world is separated in sectors. Sectors are independent during simulation, but can 'send' entities to neighboring 
 sectors. Interactions between entities in different sectors are impossible, so the game needs to take care of that: the
@@ -59,7 +59,7 @@ players (splitscreen). Each client runs two simulations. One that is an approxim
 lags behind the present time, and uses inputs from players to update as best as it can 
 (maybe loding out very far entities in the sector, which means this sim will have errors).
 
-But this is still a 'single time' simulation', that needs player inputs before updating. So it lags.
+But this is still a 'single time simulation', that needs player inputs before updating. So it lags.
 
 We hide this lag with a second simulation, which is predicted up to the present with local inputs.
 A predicted simulation is restarted from the real simulation every frame, for a couple of large dts that are not deterministic 
@@ -70,7 +70,6 @@ The time of each entity depends on distance from local players. So we have a rel
 
 Anyways. This is in my head now. It should move into this github repo in the following months.
 
-Using: vulkan, glfw, glm, imgui, spdlog, pods, rapidjson, kissnet, magic_enum, stb_image, tiny_obj_loader.
 
 
 

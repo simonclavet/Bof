@@ -377,6 +377,48 @@ public:
         CHECK_VKRESULT(result);
     }
 
+    //static void createBufferAlloc(
+    //    const vk::DeviceSize size,
+    //    const vk::BufferUsageFlags usage,
+    //    const vk::MemoryPropertyFlags properties,
+    //    const vma::Allocator& allocator,
+    //    const vk::UniqueDevice& device,
+    //    // output
+    //    vk::Buffer& outputBuffer,
+    //    vma::Allocation& outputBufferAllocation)
+    //{
+    //    vk::BufferCreateInfo bufferInfo = {};
+    //    bufferInfo.size = size;
+    //    bufferInfo.usage = usage;
+    //    bufferInfo.sharingMode = vk::SharingMode::eExclusive;
+
+    //    vma::AllocationCreateInfo allocInfo{};
+    //    allocInfo.usage = MemoryUsage
+
+
+
+    //    //outputBuffer = checkVkResult(device->createBuffer(bufferInfo, nullptr));
+
+    //    //const vk::MemoryRequirements memRequirements = device->getBufferMemoryRequirements(outputBuffer);
+
+    //    //vk::MemoryAllocateInfo allocInfo = {};
+    //    //allocInfo.allocationSize = memRequirements.size;
+
+
+    //    //const uint32_t acceptableMemoryTypes = memRequirements.memoryTypeBits;
+
+    //    //allocInfo.memoryTypeIndex = VulkanHelpers::findMemoryTypeIndex(
+    //    //    acceptableMemoryTypes,
+    //    //    properties,
+    //    //    physicalDevice);
+
+    //    //outputMemory = checkVkResult(device->allocateMemory(allocInfo));
+
+    //    //const vk::DeviceSize memoryOffset = 0;
+    //    //const vk::Result result = device->bindBufferMemory(outputBuffer, outputMemory, memoryOffset);
+    //    //CHECK_VKRESULT(result);
+    //}
+
     static void createImage(
         const vk::Extent2D& extent,
         uint32_t mipLevels,
@@ -586,6 +628,99 @@ public:
             device, queue, commandPool);
 
     }
+
+    //static void createTextureImageNew(
+    //    const char* filename,
+    //    const vk::PhysicalDevice& physicalDevice,
+    //    const vma::Allocator& allocator,
+    //    const vk::UniqueDevice& device,
+    //    const vk::Queue& queue,
+    //    const vk::CommandPool& commandPool,
+    //    // output
+    //    vk::Image& outputImage,
+    //    vma::Allocation& outputImageAllocation,
+    //    uint32_t& outMipLevels)
+    //{
+    //    int texWidth, texHeight, texChannels;
+    //    stbi_uc* pixels = stbi_load(
+    //        filename, &texWidth, &texHeight,
+    //        &texChannels, STBI_rgb_alpha);
+    //    BOF_ASSERT_MSG(pixels != nullptr, "can't load %s", filename);
+
+    //    outMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+
+    //    const vk::DeviceSize imageSize = texWidth * texHeight * 4;
+
+    //    vk::Buffer stagingBuffer;
+    //    vk::DeviceMemory stagingBufferMemory;
+
+    //    createBuffer(
+    //        imageSize,
+    //        vk::BufferUsageFlagBits::eTransferSrc,
+    //        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+    //        physicalDevice, device,
+    //        stagingBuffer, stagingBufferMemory);
+
+    //    const vk::DeviceSize memoryOffset = 0;
+    //    void* data = checkVkResult(device->mapMemory(
+    //        stagingBufferMemory,
+    //        memoryOffset,
+    //        imageSize,
+    //        vk::MemoryMapFlags{}));
+
+    //    memcpy(data, pixels, static_cast<size_t>(imageSize));
+
+    //    device->unmapMemory(stagingBufferMemory);
+
+    //    stbi_image_free(pixels);
+
+    //    const vk::Extent2D texExtent{ static_cast<uint32_t>(texWidth),static_cast<uint32_t>(texHeight) };
+
+    //    createImage(
+    //        texExtent,
+    //        outMipLevels,
+    //        vk::SampleCountFlagBits::e1,
+    //        vk::Format::eR8G8B8A8Srgb,
+    //        vk::ImageTiling::eOptimal,
+    //        vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+    //        vk::MemoryPropertyFlagBits::eDeviceLocal,
+    //        physicalDevice, device,
+    //        outputImage,
+    //        outputImageMemory);
+
+    //    transitionImageLayout(
+    //        outputImage,
+    //        vk::Format::eR8G8B8A8Srgb,
+    //        vk::ImageLayout::eUndefined,
+    //        vk::ImageLayout::eTransferDstOptimal,
+    //        outMipLevels,
+    //        device, queue, commandPool);
+
+    //    copyBufferToImage(
+    //        stagingBuffer,
+    //        outputImage,
+    //        texWidth, texHeight,
+    //        device, queue, commandPool);
+
+    //    //transitionImageLayout(
+    //    //    outputImage,
+    //    //    vk::Format::eR8G8B8A8Srgb,
+    //    //    vk::ImageLayout::eTransferDstOptimal,
+    //    //    vk::ImageLayout::eShaderReadOnlyOptimal,
+    //    //    outMipLevels,
+    //    //    device, queue, commandPool);
+
+    //    device->destroyBuffer(stagingBuffer);
+    //    device->freeMemory(stagingBufferMemory);
+
+    //    generateMipmaps(
+    //        outputImage,
+    //        texWidth,
+    //        texHeight,
+    //        outMipLevels,
+    //        device, queue, commandPool);
+
+    //}
 
     static void generateMipmaps(
         vk::Image image,

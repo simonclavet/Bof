@@ -982,24 +982,26 @@ private:
         {
             PROFILE(createUniformBuffers);
             BOF_ASSERT(m_uniformBuffers.empty());
-            BOF_ASSERT(m_uniformBuffersMemory.empty());
+            BOF_ASSERT(m_uniformBuffersAllocations.empty());
 
             const vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
 
             m_uniformBuffers.resize(m_swapchainImageCount);
-            m_uniformBuffersMemory.resize(m_swapchainImageCount);
-
+            m_uniformBuffersAllocations.resize(m_swapchainImageCount);
+            
             for (size_t i = 0; i < m_swapchainImageCount; i++)
             {
-                VulkanHelpers::createBuffer(
-                    bufferSize,
-                    vk::BufferUsageFlagBits::eUniformBuffer,
-                    vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-                    m_physicalDevice,
-                    m_device,
-                    // output
-                    m_uniformBuffers[i],
-                    m_uniformBuffersMemory[i]);
+                vk::BufferCreateInfo bufferInfo{};
+                bufferInfo.size = bufferSize;
+                bufferInfo.usage = vk::BufferUsageFlagBits::eUniformBuffer;
+
+                vma::AllocationCreateInfo allocInfo{};
+                allocInfo.usage = vma::MemoryUsage::eCpuToGpu;
+
+                m_allocator.createBuffer(
+                    &bufferInfo, &allocInfo,
+                    &m_uniformBuffers[i], &m_uniformBuffersAllocations[i],
+                    nullptr);
             }
         }
 
@@ -1380,13 +1382,11 @@ private:
         for (size_t i = 0; i < m_swapchainImageCount; i++)
         {
             m_device->destroyImageView(m_swapchainImageViews[i]);
-
-            m_device->destroyBuffer(m_uniformBuffers[i]);
-            m_device->freeMemory(m_uniformBuffersMemory[i]);
+            m_allocator.destroyBuffer(m_uniformBuffers[i], m_uniformBuffersAllocations[i]);
         }
         m_swapchainImageViews.clear();
         m_uniformBuffers.clear();
-        m_uniformBuffersMemory.clear();
+        m_uniformBuffersAllocations.clear();
 
         m_device->destroyDescriptorPool(m_descriptorPool); m_descriptorPool = nullptr;
 
@@ -1607,10 +1607,14 @@ private:
         ubo.proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
         ubo.proj[1][1] *= -1;
 
-        const vk::DeviceSize memoryOffset = 0;
-        void* data = m_device->mapMemory(m_uniformBuffersMemory[currentImage], memoryOffset, sizeof(ubo), vk::MemoryMapFlags{});
+        //const vk::DeviceSize memoryOffset = 0;
+        //void* data = m_device->mapMemory(m_uniformBuffersMemory[currentImage], memoryOffset, sizeof(ubo), vk::MemoryMapFlags{});
+        //memcpy(data, &ubo, sizeof(ubo));
+        //m_device->unmapMemory(m_uniformBuffersMemory[currentImage]);
+
+        void* data = checkVkResult(m_allocator.mapMemory(m_uniformBuffersAllocations[currentImage]));
         memcpy(data, &ubo, sizeof(ubo));
-        m_device->unmapMemory(m_uniformBuffersMemory[currentImage]);
+        m_allocator.unmapMemory(m_uniformBuffersAllocations[currentImage]);
     }
 
     void showFps()
@@ -1734,7 +1738,7 @@ private:
     vk::DeviceMemory m_indexBufferMemory = nullptr;
 
     Vector<vk::Buffer> m_uniformBuffers;
-    Vector<vk::DeviceMemory> m_uniformBuffersMemory;
+    Vector<vma::Allocation> m_uniformBuffersAllocations;
 
     vk::DescriptorPool m_descriptorPool = nullptr;
     Vector<vk::DescriptorSet> m_descriptorSets;
@@ -1751,17 +1755,9 @@ private:
     vk::ImageView m_textureImageView = nullptr;
     vk::Sampler m_textureSampler = nullptr;
 
-    vk::Image m_depthImageOld = nullptr;
-    vk::DeviceMemory m_depthImageMemoryOld = nullptr;
-    vk::ImageView m_depthImageViewOld = nullptr;
-
     vk::Image m_depthImage = nullptr;
     vma::Allocation m_depthImageAllocation = nullptr;
     vk::ImageView m_depthImageView = nullptr;
-
-    //vk::Image m_colorImage = nullptr;
-    //vk::DeviceMemory m_colorImageMemory = nullptr;
-    //vk::ImageView m_colorImageView = nullptr;
 
     vk::Image m_colorImage = nullptr;
     vma::Allocation m_colorImageAllocation = nullptr;
