@@ -10,7 +10,15 @@
 #include "utils/RingBuffer.h"
 
 #include "core/BofEngine.h"
+//#include "utils/GoodSave.h"
 
+#include "components/GoodComponents.h"
+#include "utils/GoodSave.h"
+
+#include "external/pods/pods.h"
+#include "external/pods/buffers.h"
+
+//#include "podsprev/buffers.h"
 
 //#ifdef _DEBUG
 //#define IMGUI_VULKAN_DEBUG_REPORT
@@ -113,7 +121,7 @@ class BofGame
 {
 public:
     void run()
-    {       
+    {
         init();
         mainLoop();
         cleanup();
@@ -304,25 +312,30 @@ private:
 
             VulkanHelpers::createTextureImage(
                 m_texturePath.c_str(),
-                m_physicalDevice,
                 m_device,
                 m_graphicsQueue,
                 m_commandPool,
+                m_allocator,
                 // output
                 m_textureImage,
-                m_textureImageMemory,
+                m_textureImageAllocation,
                 m_mipLevels);
         }
         {
             PROFILE(createTextureImageView);
             BOF_ASSERT(m_textureImage);
 
-            m_textureImageView = VulkanHelpers::createImageView(
-                m_textureImage,
-                vk::Format::eR8G8B8A8Srgb,
-                vk::ImageAspectFlagBits::eColor,
-                m_mipLevels,
-                m_device);
+            vk::ImageViewCreateInfo viewInfo{};
+            viewInfo.image = m_textureImage;
+            viewInfo.viewType = vk::ImageViewType::e2D;
+            viewInfo.format = vk::Format::eR8G8B8A8Srgb;
+            viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = m_mipLevels;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 1;
+
+            m_textureImageView = checkVkResult(m_device->createImageView(viewInfo));
         }
         {
             PROFILE(createTextureSampler);
@@ -415,26 +428,27 @@ private:
             VulkanHelpers::createAndFillBuffer(
                 m_vertices,
                 vk::BufferUsageFlagBits::eVertexBuffer,
-                m_physicalDevice,
                 m_device,
                 m_graphicsQueue,
                 m_commandPool,
+                m_allocator,
                 // output
                 m_vertexBuffer,
-                m_vertexBufferMemory);
+                m_vertexBufferAllocation);
         }
         {
             PROFILE(createIndexBuffer);
+            BOF_ASSERT(!m_indices.empty());
             VulkanHelpers::createAndFillBuffer(
                 m_indices,
                 vk::BufferUsageFlagBits::eIndexBuffer,
-                m_physicalDevice,
                 m_device,
                 m_graphicsQueue,
                 m_commandPool,
+                m_allocator,
                 // output
                 m_indexBuffer,
-                m_indexBufferMemory);
+                m_indexBufferAllocation);
         }
         {
             PROFILE(createDescriptorSetLayout);
@@ -614,13 +628,17 @@ private:
 
             for (size_t i = 0; i < m_swapchainImageCount; i++)
             {
-                const uint32_t mipLevelsJustOne = 1;
-                m_swapchainImageViews[i] = VulkanHelpers::createImageView(
-                    m_swapchainImages[i],
-                    m_swapchainImageFormat,
-                    vk::ImageAspectFlagBits::eColor,
-                    mipLevelsJustOne,
-                    m_device);
+                vk::ImageViewCreateInfo viewInfo{};
+                viewInfo.image = m_swapchainImages[i];
+                viewInfo.viewType = vk::ImageViewType::e2D;
+                viewInfo.format = m_swapchainImageFormat;
+                viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+                viewInfo.subresourceRange.baseMipLevel = 0;
+                viewInfo.subresourceRange.levelCount = 1;
+                viewInfo.subresourceRange.baseArrayLayer = 0;
+                viewInfo.subresourceRange.layerCount = 1;
+
+                m_swapchainImageViews[i] = checkVkResult(m_device->createImageView(viewInfo));
             }
         }
 
@@ -883,23 +901,6 @@ private:
 
             const vk::Format colorFormat = m_swapchainImageFormat;
             const uint32_t mipLevelsJustOne = 1;
-            //
-            //VulkanHelpers::createImageAndImageView(
-            //    m_swapchainExtent,
-            //    mipLevelsJustOne,
-            //    m_msaaSamples,
-            //    colorFormat,
-            //    vk::ImageTiling::eOptimal,
-            //    vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment,
-            //    vk::MemoryPropertyFlagBits::eDeviceLocal,
-            //    vk::ImageAspectFlagBits::eColor,
-            //    m_physicalDevice,
-            //    m_device,
-            //    // output
-            //    m_colorImage,
-            //    m_colorImageMemory,
-            //    m_colorImageView);
-
 
             VulkanHelpers::createImageAndImageView(
                 m_swapchainExtent,
@@ -916,8 +917,6 @@ private:
                 m_colorImage,
                 m_colorImageAllocation,
                 m_colorImageView);
-
-
         }
         {
             PROFILE(createDepthResources);
@@ -1301,16 +1300,23 @@ private:
 
         m_device->destroySampler(m_textureSampler); m_textureSampler = nullptr;
         m_device->destroyImageView(m_textureImageView); m_textureImageView = nullptr;
-        m_device->destroyImage(m_textureImage); m_textureImage = nullptr;
-        m_device->freeMemory(m_textureImageMemory); m_textureImageMemory = nullptr;
+
+        m_allocator.destroyImage(m_textureImage, m_textureImageAllocation);
+        m_textureImage = nullptr;
+        m_textureImageAllocation = nullptr;
+        //m_device->destroyImage(m_textureImage); m_textureImage = nullptr;
+        //m_device->freeMemory(m_textureImageMemory); m_textureImageMemory = nullptr;
 
         m_device->destroyDescriptorSetLayout(m_descriptorSetLayout); m_descriptorSetLayout = nullptr;
 
-        m_device->destroyBuffer(m_indexBuffer); m_indexBuffer = nullptr;
-        m_device->freeMemory(m_indexBufferMemory); m_indexBufferMemory = nullptr;
+        m_allocator.destroyBuffer(m_indexBuffer, m_indexBufferAllocation);
+        m_indexBuffer = nullptr;
+        m_indexBufferAllocation = nullptr;
 
-        m_device->destroyBuffer(m_vertexBuffer); m_vertexBuffer = nullptr;
-        m_device->freeMemory(m_vertexBufferMemory); m_vertexBufferMemory = nullptr;
+        m_allocator.destroyBuffer(m_vertexBuffer, m_vertexBufferAllocation);
+        m_vertexBuffer = nullptr;
+        m_vertexBufferAllocation = nullptr;
+
 
         for (size_t i = 0; i < m_maxFramesInFlight; i++)
         {
@@ -1731,11 +1737,11 @@ private:
 
     Vector<Vertex> m_vertices;    
     vk::Buffer m_vertexBuffer = nullptr;
-    vk::DeviceMemory m_vertexBufferMemory = nullptr;
+    vma::Allocation m_vertexBufferAllocation = nullptr;
 
     Vector<uint32_t> m_indices;
     vk::Buffer m_indexBuffer = nullptr;
-    vk::DeviceMemory m_indexBufferMemory = nullptr;
+    vma::Allocation m_indexBufferAllocation = nullptr;
 
     Vector<vk::Buffer> m_uniformBuffers;
     Vector<vma::Allocation> m_uniformBuffersAllocations;
@@ -1751,7 +1757,7 @@ private:
 
     uint32_t m_mipLevels = 1;
     vk::Image m_textureImage = nullptr;
-    vk::DeviceMemory m_textureImageMemory = nullptr;
+    vma::Allocation m_textureImageAllocation = nullptr;
     vk::ImageView m_textureImageView = nullptr;
     vk::Sampler m_textureSampler = nullptr;
 
@@ -1808,13 +1814,95 @@ private:
 };
 
 
+struct Allo : public GoodSerializable
+{
+    int someInt{ 3 };
+    float someFloat{ 4.5f };
+    std::vector<int> someIntVec{ 3, 6, 7 };
+    std::string someString{ "bof tu sais" };
+
+    GOOD_SERIALIZABLE(Allo, GOOD_VERSION(1)
+        , GOOD(someInt)
+        , GOOD(someFloat)
+        , GOOD(someIntVec)
+        , GOOD(someString)
+    );
+
+};
 
 
+
+void prepareMyGridWithComponentVectors(ComponentGrid& grid)
+{
+    grid.AddCompVector<Allo>();
+
+}
 
 
 int main(int /*argc*/, char** /*argv*/)
 {
     Bof::Log::Init();
+
+    //Allo allo;
+
+    //pods::ResizableOutputBuffer out;
+    //pods::PrettyJsonSerializer<decltype(out)> serializer(out);
+    //serializer.save(allo);
+
+    //out.put('\0');
+    //std::string s = out.data();
+
+    //cout << s << endl;
+
+
+
+    ComponentGrid grid;
+    prepareMyGridWithComponentVectors(grid);
+
+    GoodId entityIdGenerator = 10000;
+
+    GoodId myEntity0 = entityIdGenerator++;
+
+    //Allo* newAlloComp = grid.GetCompVector<Allo>()->AddEntityId(myEntity0);
+    //Allo* newAlloComp = GET_COMPS(grid, Allo).AddEntityId(myEntity0);
+    Allo* newAlloComp = grid.AddComp<Allo>(myEntity0);
+    newAlloComp->someInt = 56;
+
+    GoodId myEntity1 = entityIdGenerator++;
+
+    Allo* newAlloComp1 = grid.AddComp<Allo>(myEntity1);
+    newAlloComp1->someInt = 588;
+
+
+
+//    cout << 
+
+
+
+    pods::ResizableOutputBuffer out;
+    pods::PrettyJsonSerializer<decltype(out)> serializer(out);
+    serializer.save(grid);
+
+    out.put('\0');
+    std::string s = out.data();
+
+    cout << s << endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     BofGame* app = new BofGame();
 

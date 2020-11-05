@@ -16,15 +16,6 @@
 #include "utils/Timer.h"
 
 
-class EntityNameComp : public GoodSerializable
-{
-public:
-    string m_name = "noname";
-
-    GOOD_SERIALIZABLE(EntityNameComp, GOOD_VERSION(1), 
-        GOOD(m_name));
-};
-
 
 class MetaComponentComp : public GoodSerializable
 {

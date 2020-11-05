@@ -1,19 +1,8 @@
 #pragma once
 
 #include "core/core.h"
-//#include "core/BofEngine.h"
-//#include "utils/Timer.h"
-//#include "utils/BofLog.h"
-//
-//#include "utils/GoodSave.h"
-//#include "utils/HashSortedVector.h"
-//#include "utils/RingBuffer.h"
-
-//#include "utils/VulkanHelpers.h"
-
 
 // sorry.. can't deal with std:: for such basic things, but 'using namespace std' is not a good idea.
-// If you have problems with an already defined Vector or String, sue me.
 template<typename T>
 using Vector = std::vector<T>;
 using String = std::string;
@@ -34,10 +23,6 @@ VALUE checkVkResult(const vk::ResultValue<VALUE>& resultValue)
 
 
 
-
-// purelly functional library of little functions that should facilitate stuff.
-// do not extend a function if you need to add too many arguments to it.
-// Just copy paste its content instead. It's ok to copy paste stuff.
 class VulkanHelpers
 {
 public:
@@ -340,151 +325,6 @@ public:
         return 0;
     }
 
-    static void createBuffer(
-        const vk::DeviceSize size,
-        const vk::BufferUsageFlags usage,
-        const vk::MemoryPropertyFlags properties,
-        const vk::PhysicalDevice& physicalDevice,
-        const vk::UniqueDevice& device,
-        // output
-        vk::Buffer& outputBuffer,
-        vk::DeviceMemory& outputMemory)
-    {
-        vk::BufferCreateInfo bufferInfo = {};
-        bufferInfo.size = size;
-        bufferInfo.usage = usage;
-        bufferInfo.sharingMode = vk::SharingMode::eExclusive;
-
-        outputBuffer = checkVkResult(device->createBuffer(bufferInfo, nullptr));
-
-        const vk::MemoryRequirements memRequirements = device->getBufferMemoryRequirements(outputBuffer);
-
-        vk::MemoryAllocateInfo allocInfo = {};
-        allocInfo.allocationSize = memRequirements.size;
-
-
-        const uint32_t acceptableMemoryTypes = memRequirements.memoryTypeBits;
-
-        allocInfo.memoryTypeIndex = VulkanHelpers::findMemoryTypeIndex(
-            acceptableMemoryTypes,
-            properties,
-            physicalDevice);
-
-        outputMemory = checkVkResult(device->allocateMemory(allocInfo));
-
-        const vk::DeviceSize memoryOffset = 0;
-        const vk::Result result = device->bindBufferMemory(outputBuffer, outputMemory, memoryOffset);
-        CHECK_VKRESULT(result);
-    }
-
-    //static void createBufferAlloc(
-    //    const vk::DeviceSize size,
-    //    const vk::BufferUsageFlags usage,
-    //    const vk::MemoryPropertyFlags properties,
-    //    const vma::Allocator& allocator,
-    //    const vk::UniqueDevice& device,
-    //    // output
-    //    vk::Buffer& outputBuffer,
-    //    vma::Allocation& outputBufferAllocation)
-    //{
-    //    vk::BufferCreateInfo bufferInfo = {};
-    //    bufferInfo.size = size;
-    //    bufferInfo.usage = usage;
-    //    bufferInfo.sharingMode = vk::SharingMode::eExclusive;
-
-    //    vma::AllocationCreateInfo allocInfo{};
-    //    allocInfo.usage = MemoryUsage
-
-
-
-    //    //outputBuffer = checkVkResult(device->createBuffer(bufferInfo, nullptr));
-
-    //    //const vk::MemoryRequirements memRequirements = device->getBufferMemoryRequirements(outputBuffer);
-
-    //    //vk::MemoryAllocateInfo allocInfo = {};
-    //    //allocInfo.allocationSize = memRequirements.size;
-
-
-    //    //const uint32_t acceptableMemoryTypes = memRequirements.memoryTypeBits;
-
-    //    //allocInfo.memoryTypeIndex = VulkanHelpers::findMemoryTypeIndex(
-    //    //    acceptableMemoryTypes,
-    //    //    properties,
-    //    //    physicalDevice);
-
-    //    //outputMemory = checkVkResult(device->allocateMemory(allocInfo));
-
-    //    //const vk::DeviceSize memoryOffset = 0;
-    //    //const vk::Result result = device->bindBufferMemory(outputBuffer, outputMemory, memoryOffset);
-    //    //CHECK_VKRESULT(result);
-    //}
-
-    static void createImage(
-        const vk::Extent2D& extent,
-        uint32_t mipLevels,
-        const vk::SampleCountFlagBits numSamples,
-        const vk::Format& format,
-        const vk::ImageTiling& tiling,
-        const vk::ImageUsageFlags& imageUsage,
-        const vk::MemoryPropertyFlagBits& desiredMemoryProperties,
-        const vk::PhysicalDevice& physicalDevice,
-        const vk::UniqueDevice& device,
-        // output
-        vk::Image& outputImage,
-        vk::DeviceMemory& outputImageMemory)
-    {
-        vk::ImageCreateInfo imageInfo{};
-        imageInfo.imageType = vk::ImageType::e2D;
-        imageInfo.setExtent({ extent.width, extent.height, 1 });
-        imageInfo.mipLevels = mipLevels;
-        imageInfo.arrayLayers = 1;
-        imageInfo.format = format;
-        imageInfo.tiling = tiling;
-        imageInfo.initialLayout = vk::ImageLayout::eUndefined;
-        imageInfo.usage = imageUsage;
-        imageInfo.sharingMode = vk::SharingMode::eExclusive;
-        imageInfo.samples = numSamples;
-        imageInfo.flags = vk::ImageCreateFlags{};
-
-        outputImage = checkVkResult(device->createImage(imageInfo));
-
-        const vk::MemoryRequirements memRequirements = device->getImageMemoryRequirements(outputImage);
-
-        vk::MemoryAllocateInfo allocInfo{};
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = VulkanHelpers::findMemoryTypeIndex(
-            memRequirements.memoryTypeBits,
-            desiredMemoryProperties,
-            physicalDevice);
-
-        outputImageMemory = checkVkResult(device->allocateMemory(allocInfo));
-
-        const vk::DeviceSize memoryOffset = 0;
-        device->bindImageMemory(outputImage, outputImageMemory, memoryOffset);
-    }
-
-
-    static vk::ImageView createImageView(
-        const vk::Image& image,
-        const vk::Format& format,
-        const vk::ImageAspectFlags& aspectFlags,
-        const uint32_t& mipLevels,
-        const vk::UniqueDevice& device)
-    {
-        vk::ImageViewCreateInfo viewInfo{};
-        viewInfo.image = image;
-        viewInfo.viewType = vk::ImageViewType::e2D;
-        viewInfo.format = format;
-        viewInfo.subresourceRange.aspectMask = aspectFlags;
-        viewInfo.subresourceRange.baseMipLevel = 0;
-        viewInfo.subresourceRange.levelCount = mipLevels;
-        viewInfo.subresourceRange.baseArrayLayer = 0;
-        viewInfo.subresourceRange.layerCount = 1;
-
-        return checkVkResult(device->createImageView(viewInfo));
-    }
-
-
     static void createImageAndImageView(
         const vk::Extent2D& extent,
         const uint32_t& mipLevels,
@@ -527,25 +367,32 @@ public:
             &outputImageAllocation,
             nullptr));
 
-        outputImageView = createImageView(
-            outputImage,
-            format,
-            aspectFlags,
-            mipLevels,
-            device);
+        vk::ImageViewCreateInfo viewInfo{};
+        viewInfo.image = outputImage;
+        viewInfo.viewType = vk::ImageViewType::e2D;
+        viewInfo.format = format;
+        viewInfo.subresourceRange.aspectMask = aspectFlags;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = mipLevels;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+
+        outputImageView = checkVkResult(device->createImageView(viewInfo));
     }
+
+
 
 
 
     static void createTextureImage(
         const char* filename,
-        const vk::PhysicalDevice& physicalDevice,
         const vk::UniqueDevice& device,
         const vk::Queue& queue,
         const vk::CommandPool& commandPool,
+        const vma::Allocator& allocator,
         // output
         vk::Image& outputImage,
-        vk::DeviceMemory& outputImageMemory,
+        vma::Allocation& outputImageAllocation,
         uint32_t& outMipLevels)
     {
         int texWidth, texHeight, texChannels;
@@ -559,41 +406,48 @@ public:
         const vk::DeviceSize imageSize = texWidth * texHeight * 4;
 
         vk::Buffer stagingBuffer;
-        vk::DeviceMemory stagingBufferMemory;
+        vma::Allocation stagingBufferAllocation;
+        {
+            vk::BufferCreateInfo bufferInfo{};
+            bufferInfo.size = imageSize;
+            bufferInfo.usage = vk::BufferUsageFlagBits::eTransferSrc;
+            vma::AllocationCreateInfo allocInfo{};
+            allocInfo.usage = vma::MemoryUsage::eCpuToGpu;
 
-        createBuffer(
-            imageSize,
-            vk::BufferUsageFlagBits::eTransferSrc,
-            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-            physicalDevice, device,
-            stagingBuffer, stagingBufferMemory);
+            CHECK_VKRESULT(allocator.createBuffer(&bufferInfo, &allocInfo, &stagingBuffer, &stagingBufferAllocation, nullptr));
+        }
 
-        const vk::DeviceSize memoryOffset = 0;
-        void* data = checkVkResult(device->mapMemory(
-            stagingBufferMemory,
-            memoryOffset,
-            imageSize,
-            vk::MemoryMapFlags{}));
-
+        void* data = checkVkResult(allocator.mapMemory(stagingBufferAllocation));
         memcpy(data, pixels, static_cast<size_t>(imageSize));
-
-        device->unmapMemory(stagingBufferMemory);
+        allocator.unmapMemory(stagingBufferAllocation);
 
         stbi_image_free(pixels);
 
-        const vk::Extent2D texExtent{ static_cast<uint32_t>(texWidth),static_cast<uint32_t>(texHeight) };
 
-        createImage(
-            texExtent,
-            outMipLevels,
-            vk::SampleCountFlagBits::e1,
-            vk::Format::eR8G8B8A8Srgb,
-            vk::ImageTiling::eOptimal,
-            vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
-            vk::MemoryPropertyFlagBits::eDeviceLocal,
-            physicalDevice, device,
-            outputImage,
-            outputImageMemory);
+
+        vk::ImageCreateInfo imageInfo{};
+        imageInfo.imageType = vk::ImageType::e2D;
+        imageInfo.extent = vk::Extent3D{ (uint32_t)texWidth, (uint32_t)texHeight, 1 };
+        imageInfo.mipLevels = outMipLevels;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = vk::Format::eR8G8B8A8Srgb;
+        imageInfo.tiling = vk::ImageTiling::eOptimal;
+        imageInfo.initialLayout = vk::ImageLayout::eUndefined;
+        imageInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+        imageInfo.sharingMode = vk::SharingMode::eExclusive;
+        imageInfo.samples = vk::SampleCountFlagBits::e1;
+        imageInfo.flags = vk::ImageCreateFlags{};
+
+        vma::AllocationCreateInfo allocInfo{};
+        allocInfo.usage = vma::MemoryUsage::eGpuOnly;
+        allocInfo.flags = vma::AllocationCreateFlagBits::eMapped;
+
+        CHECK_VKRESULT(allocator.createImage(
+            &imageInfo,
+            &allocInfo,
+            &outputImage,
+            &outputImageAllocation,
+            nullptr));
 
         transitionImageLayout(
             outputImage,
@@ -609,16 +463,8 @@ public:
             texWidth, texHeight,
             device, queue, commandPool);
 
-        //transitionImageLayout(
-        //    outputImage,
-        //    vk::Format::eR8G8B8A8Srgb,
-        //    vk::ImageLayout::eTransferDstOptimal,
-        //    vk::ImageLayout::eShaderReadOnlyOptimal,
-        //    outMipLevels,
-        //    device, queue, commandPool);
+        allocator.destroyBuffer(stagingBuffer, stagingBufferAllocation);
 
-        device->destroyBuffer(stagingBuffer);
-        device->freeMemory(stagingBufferMemory);
 
         generateMipmaps(
             outputImage,
@@ -629,98 +475,8 @@ public:
 
     }
 
-    //static void createTextureImageNew(
-    //    const char* filename,
-    //    const vk::PhysicalDevice& physicalDevice,
-    //    const vma::Allocator& allocator,
-    //    const vk::UniqueDevice& device,
-    //    const vk::Queue& queue,
-    //    const vk::CommandPool& commandPool,
-    //    // output
-    //    vk::Image& outputImage,
-    //    vma::Allocation& outputImageAllocation,
-    //    uint32_t& outMipLevels)
-    //{
-    //    int texWidth, texHeight, texChannels;
-    //    stbi_uc* pixels = stbi_load(
-    //        filename, &texWidth, &texHeight,
-    //        &texChannels, STBI_rgb_alpha);
-    //    BOF_ASSERT_MSG(pixels != nullptr, "can't load %s", filename);
 
-    //    outMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
-    //    const vk::DeviceSize imageSize = texWidth * texHeight * 4;
-
-    //    vk::Buffer stagingBuffer;
-    //    vk::DeviceMemory stagingBufferMemory;
-
-    //    createBuffer(
-    //        imageSize,
-    //        vk::BufferUsageFlagBits::eTransferSrc,
-    //        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-    //        physicalDevice, device,
-    //        stagingBuffer, stagingBufferMemory);
-
-    //    const vk::DeviceSize memoryOffset = 0;
-    //    void* data = checkVkResult(device->mapMemory(
-    //        stagingBufferMemory,
-    //        memoryOffset,
-    //        imageSize,
-    //        vk::MemoryMapFlags{}));
-
-    //    memcpy(data, pixels, static_cast<size_t>(imageSize));
-
-    //    device->unmapMemory(stagingBufferMemory);
-
-    //    stbi_image_free(pixels);
-
-    //    const vk::Extent2D texExtent{ static_cast<uint32_t>(texWidth),static_cast<uint32_t>(texHeight) };
-
-    //    createImage(
-    //        texExtent,
-    //        outMipLevels,
-    //        vk::SampleCountFlagBits::e1,
-    //        vk::Format::eR8G8B8A8Srgb,
-    //        vk::ImageTiling::eOptimal,
-    //        vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
-    //        vk::MemoryPropertyFlagBits::eDeviceLocal,
-    //        physicalDevice, device,
-    //        outputImage,
-    //        outputImageMemory);
-
-    //    transitionImageLayout(
-    //        outputImage,
-    //        vk::Format::eR8G8B8A8Srgb,
-    //        vk::ImageLayout::eUndefined,
-    //        vk::ImageLayout::eTransferDstOptimal,
-    //        outMipLevels,
-    //        device, queue, commandPool);
-
-    //    copyBufferToImage(
-    //        stagingBuffer,
-    //        outputImage,
-    //        texWidth, texHeight,
-    //        device, queue, commandPool);
-
-    //    //transitionImageLayout(
-    //    //    outputImage,
-    //    //    vk::Format::eR8G8B8A8Srgb,
-    //    //    vk::ImageLayout::eTransferDstOptimal,
-    //    //    vk::ImageLayout::eShaderReadOnlyOptimal,
-    //    //    outMipLevels,
-    //    //    device, queue, commandPool);
-
-    //    device->destroyBuffer(stagingBuffer);
-    //    device->freeMemory(stagingBufferMemory);
-
-    //    generateMipmaps(
-    //        outputImage,
-    //        texWidth,
-    //        texHeight,
-    //        outMipLevels,
-    //        device, queue, commandPool);
-
-    //}
 
     static void generateMipmaps(
         vk::Image image,
@@ -1014,69 +770,62 @@ public:
     }
 
 
-
     template<typename T>
     static void createAndFillBuffer(
         const T& sourceDataArray,
         vk::BufferUsageFlagBits usageBits,
-        const vk::PhysicalDevice& physicalDevice,
         const vk::UniqueDevice& device,
         const vk::Queue& queue,
         const vk::CommandPool& commandPool,
+        vma::Allocator allocator,
         vk::Buffer& buffer,
-        vk::DeviceMemory& bufferMemory)
+        vma::Allocation& bufferAllocation)
     {
         BOF_ASSERT_MSG(sourceDataArray.size() > 0, "no data");
         const vk::DeviceSize bufferSize = sizeof(sourceDataArray[0]) * sourceDataArray.size();
 
         vk::Buffer stagingBuffer;
-        vk::DeviceMemory stagingBufferMemory;
+        vma::Allocation stagingBufferAllocation;
+        {
+            vk::BufferCreateInfo bufferInfo{};
+            bufferInfo.size = bufferSize;
+            bufferInfo.usage = vk::BufferUsageFlagBits::eTransferSrc;
+            vma::AllocationCreateInfo allocInfo{};
+            allocInfo.usage = vma::MemoryUsage::eCpuToGpu;
 
-        createBuffer(
-            bufferSize,
-            vk::BufferUsageFlagBits::eTransferSrc,
-            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
-            physicalDevice,
-            device,
-            stagingBuffer,
-            stagingBufferMemory);
+            CHECK_VKRESULT(allocator.createBuffer(&bufferInfo, &allocInfo, &stagingBuffer, &stagingBufferAllocation, nullptr));
+        }
 
-
-        const vk::DeviceSize memoryOffset = 0;
-
-        void* data = checkVkResult(device->mapMemory(
-            stagingBufferMemory,
-            memoryOffset,
-            bufferSize,
-            vk::MemoryMapFlags{}));
-
+        void* data = checkVkResult(allocator.mapMemory(stagingBufferAllocation));
         memcpy(data, sourceDataArray.data(), static_cast<size_t>(bufferSize));
+        allocator.unmapMemory(stagingBufferAllocation);
 
-        device->unmapMemory(stagingBufferMemory);
+        {
+            vk::BufferCreateInfo bufferInfo{};
+            bufferInfo.size = bufferSize;
+            bufferInfo.usage = vk::BufferUsageFlagBits::eTransferDst | usageBits;
+            vma::AllocationCreateInfo allocInfo{};
+            allocInfo.usage = vma::MemoryUsage::eGpuOnly;
+
+            CHECK_VKRESULT(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer, &bufferAllocation, nullptr));
+        }
+
+        const vk::CommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+
+        Vector<vk::BufferCopy> copyRegions;
+        vk::BufferCopy copyRegion = {};
+        copyRegion.srcOffset = 0;
+        copyRegion.dstOffset = 0;
+        copyRegion.size = bufferSize;
+        copyRegions.push_back(copyRegion);
+
+        commandBuffer.copyBuffer(stagingBuffer, buffer, copyRegions);
+
+        endSingleTimeCommands(commandBuffer, queue, device, commandPool);
 
 
-        createBuffer(
-            bufferSize,
-            vk::BufferUsageFlagBits::eTransferDst | usageBits,
-            vk::MemoryPropertyFlagBits::eDeviceLocal,
-            physicalDevice,
-            device,
-            buffer,
-            bufferMemory
-        );
-
-        copyBuffer(
-            stagingBuffer,
-            buffer,
-            bufferSize,
-            queue,
-            device,
-            commandPool);
-
-        device->destroyBuffer(stagingBuffer);
-        device->freeMemory(stagingBufferMemory);
+        allocator.destroyBuffer(stagingBuffer, stagingBufferAllocation);
     }
-
 
 
     static vk::SampleCountFlagBits getMaxUsableSampleCount(const vk::PhysicalDevice& physicalDevice)

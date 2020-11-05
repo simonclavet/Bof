@@ -53,12 +53,26 @@ namespace pods
 #ifdef PODS_SAFE_CALL
 #error Rename the macro
 #endif
+
+#define USE_PODS_SAFE_CALL 1
+
+
+
+#if USE_PODS_SAFE_CALL
+
 #define PODS_SAFE_CALL(foo)                     \
     do                                          \
     {                                           \
-        const auto safeCallError = foo;       \
+        const auto safeCallError = (foo);       \
         if (safeCallError != pods::Error::NoError)    \
         {                                       \
+            __debugbreak();\
             return safeCallError;               \
         }                                       \
     } while (false)
+
+#else
+
+#define PODS_SAFE_CALL(foo) foo
+
+#endif

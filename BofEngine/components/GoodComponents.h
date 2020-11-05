@@ -287,8 +287,15 @@ public:
         m_compVectorMap[T::GetClassId()] = new ComponentVector<T>();
     }
 
-
-
+    // use this one only when adding only one entity to the compvector,
+    // else use GetCompVector<BozoComp>()->AddEntityId(myEntityId);
+    // the returned pointer is valid only until the next modification to the compvector
+    template <class T>
+    inline T* AddComp(GoodId entityId)
+    {
+        ComponentVector<T>* comps = GetCompVector<T>();
+        return comps->AddEntityId(entityId);
+    }
 
 
     GOOD_SERIALIZABLE_PARTIAL(ComponentGrid, GOOD_VERSION(1));
@@ -360,3 +367,12 @@ private:
 #define GET_TAGS(grid, tagId) grid.GetTagVector(tagId)
 
 
+
+class EntityNameComp : public GoodSerializable
+{
+public:
+    string m_name = "noname";
+
+    GOOD_SERIALIZABLE(EntityNameComp, GOOD_VERSION(1),
+        GOOD(m_name));
+};
