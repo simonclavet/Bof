@@ -29,20 +29,20 @@
 //#include <vulkan/vulkan.hpp>
 
 
-#include <GLFW/glfw3.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
 #define STBI_ASSERT(condition) BOF_ASSERT_MSG((condition), "stb assert") 
-#include "stb_image.h"
+#include "stb_image/stb_image.h"
 
-#include <tiny_obj_loader.h>
+#include "tiny_obj_loader/tiny_obj_loader.h"
 
 #define IMGUI_DISABLE_INCLUDE_IMCONFIG_H
 #include "imgui/imgui.h"
@@ -50,5 +50,14 @@
 #include "imgui/imgui_impl_vulkan.h"
 
 
+#include "ktx/ktx.h"
+#include "ktx/ktxvulkan.h"
+
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+#include "tiny_gltf/tiny_gltf.h"
+
+
+
+#include <GLFW/glfw3.h>
 
 #pragma warning(pop)

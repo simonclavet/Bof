@@ -3,14 +3,13 @@
 
 #pragma warning(disable: 4324) // prevent warning when custum aligning 
 
-#include "utils/VulkanHelpers.h"
+#include "VulkanHelpers/VulkanHelpers.h"
 #include "utils/Timer.h"
 #include "utils/BofLog.h"
 
 #include "utils/RingBuffer.h"
 
 #include "core/BofEngine.h"
-//#include "utils/GoodSave.h"
 
 #include "components/GoodComponents.h"
 #include "utils/GoodSave.h"
@@ -18,7 +17,6 @@
 #include "external/pods/pods.h"
 #include "external/pods/buffers.h"
 
-//#include "podsprev/buffers.h"
 
 //#ifdef _DEBUG
 //#define IMGUI_VULKAN_DEBUG_REPORT
@@ -163,13 +161,14 @@ private:
             appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
             instanceCreateInfo.pApplicationInfo = &appInfo;
 
-            const Vector<const char*> extensions = VulkanHelpers::getRequiredExtensions(m_enableValidationLayers);
-            instanceCreateInfo.setPEnabledExtensionNames(extensions);
+            Vector<const char*> extensions = VulkanHelpers::getGLFWRequiredExtensions();
 
             if constexpr (m_enableValidationLayers)
             {
+                extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
                 instanceCreateInfo.setPEnabledLayerNames(m_validationLayers);
             }
+            instanceCreateInfo.setPEnabledExtensionNames(extensions);
 
             m_instance = vk::createInstanceUnique(instanceCreateInfo);
         }
@@ -756,8 +755,8 @@ private:
 
             vk::GraphicsPipelineCreateInfo pipelineInfo{};
 
-            Vector<char> vertShaderCode = VulkanHelpers::readFile("builtShaders/shader.vert.spv");
-            Vector<char> fragShaderCode = VulkanHelpers::readFile("builtShaders/shader.frag.spv");
+            Vector<char> vertShaderCode = VulkanHelpers::readFile("Data/BuiltShaders/simpleTextured.vert.spv");
+            Vector<char> fragShaderCode = VulkanHelpers::readFile("Data/BuiltShaders/simpleTextured.frag.spv");
 
             vk::UniqueShaderModule vertShaderModule = VulkanHelpers::createShaderModule(m_device, vertShaderCode);
             vk::UniqueShaderModule fragShaderModule = VulkanHelpers::createShaderModule(m_device, fragShaderCode);
@@ -1672,7 +1671,6 @@ private:
     }
 
 
-
     Vector<const char*> m_validationLayers =
     {
         "VK_LAYER_KHRONOS_validation"
@@ -1700,6 +1698,8 @@ private:
 
     vma::Allocator m_allocator;
 
+    vk::CommandPool m_commandPool = nullptr;
+
     uint32_t m_graphicsQueueFamilyIndex = UINT32_MAX;
     uint32_t m_presentQueueFamilyIndex = UINT32_MAX;
 
@@ -1724,7 +1724,6 @@ private:
 
     Vector<vk::Framebuffer> m_swapchainFramebuffers;
 
-    vk::CommandPool m_commandPool = nullptr;
     std::vector<vk::CommandBuffer, std::allocator<vk::CommandBuffer>> m_commandBuffers;
 
     Vector<vk::Semaphore> m_imageAvailableSemaphores;

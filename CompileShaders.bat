@@ -1,2 +1,2 @@
-.\src\BofEngine\external\vulkan\Bin\glslc.exe shaders\shader.vert -o builtShaders\shader.vert.spv
-.\src\BofEngine\external\vulkan\Bin\glslc.exe shaders\shader.frag -o builtShaders\shader.frag.spv
+.\BofEngine\external\vulkan\Bin\glslc.exe Data\Shaders\simpleTextured.vert -o Data\BuiltShaders\simpleTextured.vert.spv
+.\BofEngine\external\vulkan\Bin\glslc.exe Data\shaders\simpleTextured.frag -o Data\BuiltShaders\simpleTextured.frag.spv

@@ -7,11 +7,12 @@
 
 
 
-
+// prevent unused variable warnings
 #define BOF_UNUSED(x) do {(void)sizeof(x);} while(0)
 #define BOF_UNUSED2(x, y) do {(void)sizeof(x);(void)sizeof(y);} while(0)
 #define BOF_UNUSED3(x, y, z) do {(void)sizeof(x);(void)sizeof(y);(void)sizeof(z);} while(0)
-#define BOF_UNUSED4(x, y, z, w) do {(void)sizeof(x);(void)sizeof(y);(void)sizeof(z);(void)sizeof(w);} while(0)
+#define BOF_UNUSED4(x, y, z, v) do {(void)sizeof(x);(void)sizeof(y);(void)sizeof(z);(void)sizeof(v);} while(0)
+#define BOF_UNUSED5(x, y, z, v, w) do {(void)sizeof(x);(void)sizeof(y);(void)sizeof(z);(void)sizeof(v);(void)sizeof(w);} while(0)
 
 // this is set only by release. Which means final/retail...
 #ifndef NO_BOF_ASSERTS
@@ -78,7 +79,7 @@ inline int ReportAssertFailure(
 
 #define BOF_DEBUG_BREAK() { __debugbreak(); }
 
-
+// don't do useful things in asserts. They are completelly removed in retail
 #define BOF_ASSERT(condition)\
     do\
     {\
@@ -128,8 +129,9 @@ inline int ReportAssertFailure(
 
 #endif // BOF_ASSERTS_ENABLE
 
-// if some function really wants to throw, and you want to assert on throw instead, wrap the call with this
+// If some function really wants to throw, and you want to assert on throw instead, wrap the call with this
 // In release it will just catch and continue, so don't expect much. Throwing is just the same as asserting for us.
+// Games never use throwing as a control flow. Assert fast even in release (but not retail) and fix stuff so it never happens again.
 #define BOF_TRY_CATCH(expression)\
     do\
     {\

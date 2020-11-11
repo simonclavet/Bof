@@ -43,3 +43,4 @@ namespace Bof
 #define BOF_ERROR(...) spdlog::error(__VA_ARGS__)
 
 
+#define LOG(...) spdlog::info(__VA_ARGS__)

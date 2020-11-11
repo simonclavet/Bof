@@ -5,7 +5,7 @@
 #include <map>
 //
 #include "utils/GoodSave.h"
-#include "magic_enum.h"
+#include "magic_enum/magic_enum.h"
 
 
 
@@ -113,6 +113,11 @@ public:
     // don't keep this pointer, it will become invalid soonish
     inline CompType* AddEntityId(GoodId entityId)
     {
+        BOF_ASSERT_MSG(!HasCompForEntity(entityId), 
+            "can't add already existing component %s to entity %i", 
+            CompType::GetClassName(),
+            entityId);
+
         // todo: check if already here
         m_entityToIndex[entityId] = m_entities.size();
         m_entities.push_back(entityId);
@@ -242,7 +247,7 @@ public:
         m_compVectorMap.clear();
     }
 
-    inline TagVector& GetTagVector(GoodId tagId)
+    inline TagVector& GetTags(GoodId tagId)
     {
         auto it = m_tagMap.find(tagId);
         if (it != m_tagMap.end())
@@ -254,18 +259,16 @@ public:
     }
 
     template <class T>
-    inline ComponentVector<T>* GetCompVector()
+    inline ComponentVector<T>* GetComps()
     {
         auto it = m_compVectorMap.find(T::GetClassId());
-        if (it == m_compVectorMap.end())
-        {
-            std::cerr << "can't find comp vector " << T::GetClassName() << std::endl;
-            return nullptr;
-        }
+        BOF_ASSERT_MSG(it != m_compVectorMap.end(),
+            "Can't find comp vector. Add it to the grid beforehand with grid.AddCompVector<%s>().",
+            T::GetClassName());
         return static_cast<ComponentVector<T>*>(it->second);
     }
     template <class T>
-    inline const ComponentVector<T>* GetConstCompVector() const
+    inline const ComponentVector<T>* GetConstComps() const
     {        
         auto it = const_cast<unordered_map<GoodId, ComponentVectorBase*>&>(m_compVectorMap).find(T::GetClassId());
         if (it == m_compVectorMap.end())
@@ -287,14 +290,31 @@ public:
         m_compVectorMap[T::GetClassId()] = new ComponentVector<T>();
     }
 
-    // use this one only when adding only one entity to the compvector,
-    // else use GetCompVector<BozoComp>()->AddEntityId(myEntityId);
-    // the returned pointer is valid only until the next modification to the compvector
+    // Use this to easily add a component to an entity.
+    // BozoComp* bozo = grid.AddComp<Bozo>(someEntityId);
+    // When adding multiple comps, for max performance use instead
+    // ComponentVector* bozoComps = grid.GetComps<BozoComp>();
+    // bozoComps->AddEntityId(someEntityId);
+    // bozoComps->AddEntityId(someOtherEntityId);
+    // The returned pointer is valid only until the next modification to the compvector (never keep these pointers)
     template <class T>
     inline T* AddComp(GoodId entityId)
     {
-        ComponentVector<T>* comps = GetCompVector<T>();
+        ComponentVector<T>* comps = GetComps<T>();
         return comps->AddEntityId(entityId);
+    }
+    // use this one only when getting one comp from the compvector,
+    // BozoComp* bozo = grid.GetComp<Bozo>(someEntityId);
+    // to get multiple components use instead
+    // ComponentVector* bozoComps = grid.GetComps<BozoComp>();
+    // Bozo* bozo1 = bozoComps->GetComp(someEntityId);
+    // Bozo* bozo2 = bozoComps->GetComp(someOtherEntityId);
+    // the returned pointer is valid only until the next modification to the compvector
+    template <class T>
+    inline T* GetCompIfExists(GoodId entityId)
+    {
+        ComponentVector<T>* comps = GetComps<T>();
+        return comps->GetCompIfExists(entityId);
     }
 
 

@@ -155,20 +155,34 @@ private:
     \
     static constexpr GoodId GetClassId() {return Hash64_CT(#NAME);}\
     \
-    inline GoodId GetClassIdVirtual() const override {return GetClassId();}\
+    inline GoodId GetClassIdVirtual() const override final {return GetClassId();}\
     \
     inline static void RegisterClass() {RegisterClassInternal<NAME>();}\
     \
     inline bool Equals(const NAME& other) const { return GoodHelpers::AreEqual(*this, other); } \
     \
-    inline pods::Error DeserializeVirtual(pods::JsonDeserializer<pods::InputBuffer>& jsonDeserializer) override \
+    inline pods::Error DeserializeVirtual(pods::JsonDeserializer<pods::InputBuffer>& jsonDeserializer) override final \
     {\
         return jsonDeserializer.load(*this);\
     }\
-    inline pods::Error DeserializeVirtual(pods::BinaryDeserializer<pods::InputBuffer>& binaryDeserializer) override \
+    inline pods::Error DeserializeVirtual(pods::BinaryDeserializer<pods::InputBuffer>& binaryDeserializer) override final \
     {\
         return binaryDeserializer.load(*this);\
     }\
+    inline std::string ToJsonString()\
+    {\
+        pods::ResizableOutputBuffer out;\
+        pods::PrettyJsonSerializer<decltype(out)> serializer(out);\
+        serializer.save(*this);\
+        out.put('\0');\
+        return out.data();\
+    }\
+    inline void FromJsonString(std::string s)\
+    {\
+        pods::InputBuffer in(s.data(), s.size()); \
+        pods::JsonDeserializer<decltype(in)> serializer(in); \
+        serializer.load(*this); \
+    }
 
 
 
