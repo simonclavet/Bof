@@ -873,7 +873,7 @@ public:
 //
 //};
 
-namespace bofGltf
+namespace bofgltf
 {
     enum FileLoadingFlags
     {
@@ -899,12 +899,137 @@ namespace bofGltf
         return true;
     }
 
+    bool loadImageDataFunc(
+        tinygltf::Image* image,
+        const int imageIndex,
+        std::string* error,
+        std::string* warning,
+        int req_width,
+        int req_height,
+        const unsigned char* bytes,
+        int size,
+        void* userData)
+    {
+        if (image->uri.find_last_of(".") != std::string::npos)
+        {
+            if (image->uri.substr(image->uri.find_last_of(".") + 1) == "ktx")
+            {
+                return true;
+            }
+        }
+
+        return tinygltf::LoadImageData(image, imageIndex, error, warning, req_width, req_height, bytes, size, userData);
+    }
+
+    struct Vertex
+    {
+
+    };
     
+    struct Texture
+    {
+        vk::Format m_format = vk::Format::eUndefined;
+        vk::Image m_image;
+        vk::ImageLayout m_imageLayout;
+        vma::Allocation m_imageAllocation;
+        vk::ImageView m_imageView;
+        uint32_t m_width;
+        uint32_t m_height;
+        uint32_t m_mipLevels;
+        uint32_t m_layerCount;
+        vk::DescriptorImageInfo m_descriptor;
+        vk::Sampler m_sampler;
+
+
+        void fromGltfImage(
+            const tinygltf::Image& gltfImage,
+            const String& path,
+            const vk::Device& device,
+            const vk::Queue& transferQueue)
+        {
+            BOF_UNUSED4(gltfImage, path, device, transferQueue);
+
+            bool isKtx = false;
+
+            if (!isKtx)
+            {
+                // maybe not const because might have to delete
+                unsigned char* buffer = nullptr;
+                VkDeviceSize bufferSize = 0;
+                bool deleteBuffer = false;
+
+                if (gltfImage.component == 3)
+                {
+                    bufferSize = gltfImage.width * gltfImage.height * 4;
+                    buffer = new unsigned char[bufferSize];
+                    unsigned char* rgba = buffer;
+                    unsigned char* rgb = const_cast<unsigned char*>(&gltfImage.image[0]);
+                    for (size_t i = 0; i < gltfImage.width * gltfImage.height; ++i)
+                    {
+                        for (int32_t j = 0; j < 3; ++j)
+                        {
+                            rgba[j] = rgb[j];
+                        }
+                        rgba += 4;
+                        rgb += 3;
+                    }
+                    deleteBuffer = true;
+                }
+                else
+                {
+                    buffer = const_cast<unsigned char*>(&gltfImage.image[0]);
+                    bufferSize = gltfImage.image.size();
+                }
+
+                m_format = vk::Format::eR8G8B8A8Unorm;
+
+                // todo: check format properties against physical device...
+
+                m_width = gltfImage.width;
+                m_height = gltfImage.height;
+
+
+
+
+
+
+
+
+
+            }
+
+
+
+        }
+    };
+
+    struct Material
+    {
+        enum class AlphaMode { ALPHAMODE_OPAQUE, ALPHAMODE_MASK, ALPHAMODE_BLEND };
+        AlphaMode m_alphaMode = AlphaMode::ALPHAMODE_OPAQUE;
+        float m_alphaCutoff = 1.0f;
+        float m_metallicFactor = 1.0f;
+        float m_roughnessFactor = 1.0f;
+        glm::vec4 m_baseColorFactor = glm::vec4(1.0f);
+        Texture* m_baseColorTexture = nullptr;
+        Texture* m_metallicRoughnessTexture = nullptr;
+        Texture* m_normalTexture = nullptr;
+        Texture* m_occlusionTexture = nullptr;
+        Texture* m_emissiveTexture = nullptr;
+        Texture* m_specularGlossinessTexture = nullptr;
+        Texture* m_diffuseTexture = nullptr;
+    };
+
     struct Model
     {
-        String m_path;
-
         vk::Device m_device;
+
+        Vector<Texture> m_textures;
+        Vector<Material> m_materials;
+
+        Texture m_emptyTexture;
+
+       
 
         void loadFromFile(
             String filename,
@@ -919,10 +1044,17 @@ namespace bofGltf
             tinygltf::Model gltfModel;
             tinygltf::TinyGLTF gltfContext;
 
-            gltfContext.SetImageLoader(loadImageDataFuncEmpty, nullptr);
+            if (fileLoadingFlags & FileLoadingFlags::DontLoadImages)
+            {
+                gltfContext.SetImageLoader(loadImageDataFuncEmpty, nullptr);
+            }
+            else
+            {
+                gltfContext.SetImageLoader(loadImageDataFunc, nullptr);
+            }
 
             size_t pos = filename.find_last_of('/');
-            m_path = filename.substr(0, pos);
+            String path = filename.substr(0, pos);
 
             String error, warning;
 
@@ -931,6 +1063,146 @@ namespace bofGltf
             bool fileLoaded = gltfContext.LoadASCIIFromFile(&gltfModel, &error, &warning, filename);
             BOF_ASSERT_MSG(fileLoaded, "can't load file %s", filename.c_str());
 
+            Vector<uint32_t> indexBuffer;
+            Vector<Vertex> vertexBuffer;
+
+            if (!(fileLoadingFlags & FileLoadingFlags::DontLoadImages))
+            {
+                for (const tinygltf::Image& image : gltfModel.images)
+                {
+                    bofgltf::Texture& texture = m_textures.emplace_back(bofgltf::Texture{});
+                    texture.fromGltfImage(image, path, device, transferQueue);
+
+
+
+
+                }
+            }
+
+
+
+
+
+
+            for (const tinygltf::Material& mat : gltfModel.materials)
+            {
+                bofgltf::Material& material = m_materials.emplace_back(bofgltf::Material{});
+
+                {
+                    tinygltf::ParameterMap::const_iterator foundParam =
+                        mat.values.find("baseColorTexture");
+                    if (foundParam != mat.values.end())
+                    {
+                        const int textureIndex = foundParam->second.TextureIndex();
+                        const tinygltf::Texture& tex = gltfModel.textures[textureIndex];
+                        const int textureIndexInMyArray = tex.source;
+                        bofgltf::Texture* texture = &m_textures[textureIndexInMyArray];
+                        material.m_baseColorTexture = texture;
+                    }
+                }
+                {
+                    tinygltf::ParameterMap::const_iterator foundParam =
+                        mat.values.find("metallicRoughnessTexture");
+                    if (foundParam != mat.values.end())
+                    {
+                        const int textureIndex = foundParam->second.TextureIndex();
+                        const tinygltf::Texture& tex = gltfModel.textures[textureIndex];
+                        const int textureIndexInMyArray = tex.source;
+                        bofgltf::Texture* texture = &m_textures[textureIndexInMyArray];
+                        material.m_metallicRoughnessTexture = texture;
+                    }
+                }
+                {
+                    tinygltf::ParameterMap::const_iterator foundParam =
+                        mat.values.find("roughnessFactor");
+                    if (foundParam != mat.values.end())
+                    {
+                        material.m_roughnessFactor = static_cast<float>(foundParam->second.Factor());
+                    }
+                }
+                {
+                    tinygltf::ParameterMap::const_iterator foundParam =
+                        mat.values.find("metallicFactor");
+                    if (foundParam != mat.values.end())
+                    {
+                        material.m_metallicFactor = static_cast<float>(foundParam->second.Factor());
+                    }
+                }
+                {
+                    tinygltf::ParameterMap::const_iterator foundParam =
+                        mat.values.find("baseColorFactor");
+                    if (foundParam != mat.values.end())
+                    {
+                        material.m_baseColorFactor = glm::make_vec4(foundParam->second.ColorFactor().data());
+                    }
+                }
+                {
+                    tinygltf::ParameterMap::const_iterator foundParam =
+                        mat.additionalValues.find("normalTexture");
+                    if (foundParam != mat.additionalValues.end())
+                    {
+                        const int textureIndex = foundParam->second.TextureIndex();
+                        const tinygltf::Texture& tex = gltfModel.textures[textureIndex];
+                        const int textureIndexInMyArray = tex.source;
+                        bofgltf::Texture* texture = &m_textures[textureIndexInMyArray];
+                        material.m_normalTexture = texture;
+                    }
+                    else
+                    {
+                        material.m_normalTexture = &m_emptyTexture;
+                    }
+                }
+                {
+                    tinygltf::ParameterMap::const_iterator foundParam =
+                        mat.additionalValues.find("emissiveTexture");
+                    if (foundParam != mat.additionalValues.end())
+                    {
+                        const int textureIndex = foundParam->second.TextureIndex();
+                        const tinygltf::Texture& tex = gltfModel.textures[textureIndex];
+                        const int textureIndexInMyArray = tex.source;
+                        bofgltf::Texture* texture = &m_textures[textureIndexInMyArray];
+                        material.m_emissiveTexture = texture;
+                    }
+                }
+                {
+                    tinygltf::ParameterMap::const_iterator foundParam =
+                        mat.additionalValues.find("occlusionTexture");
+                    if (foundParam != mat.additionalValues.end())
+                    {
+                        const int textureIndex = foundParam->second.TextureIndex();
+                        const tinygltf::Texture& tex = gltfModel.textures[textureIndex];
+                        const int textureIndexInMyArray = tex.source;
+                        bofgltf::Texture* texture = &m_textures[textureIndexInMyArray];
+                        material.m_occlusionTexture = texture;
+                    }
+                }
+                {
+                    tinygltf::ParameterMap::const_iterator foundParam =
+                        mat.additionalValues.find("alphaMode");
+                    if (foundParam != mat.additionalValues.end())
+                    {
+                        const tinygltf::Parameter& param = foundParam->second;
+                        if (param.string_value == "BLEND")
+                        {
+                            material.m_alphaMode = Material::AlphaMode::ALPHAMODE_BLEND;
+                        }
+                        else if (param.string_value == "MASK")
+                        {
+                            material.m_alphaMode = Material::AlphaMode::ALPHAMODE_MASK;
+                        }
+                    }
+                }
+                {
+                    tinygltf::ParameterMap::const_iterator foundParam =
+                        mat.additionalValues.find("alphaCutoff");
+                    if (foundParam != mat.additionalValues.end())
+                    {
+                        material.m_alphaCutoff = static_cast<float>(foundParam->second.Factor());
+                    }
+                }
+            }
+            // default material
+            m_materials.push_back(Material{});
         }
 
     };

@@ -435,9 +435,12 @@ private:
         {
             PROFILE(loadGltfModel);
 
-            String filename = "Data/DataFromVulkanExamples/models/plane.gltf";
+            //String filename = "Data/DataFromVulkanExamples/models/plane.gltf";
+            //String filename = "Data/DataFromVulkanExamples/models/treasure_smooth.gltf";
+            //String filename = "Data/DataFromVulkanExamples/models/oaktree.gltf";
+            String filename = "Data/DataFromVulkanExamples/models/deer.gltf";
 
-            bofGltf::Model model;
+            bofgltf::Model model;
             model.loadFromFile(
                 filename,
                 m_device.get(),
