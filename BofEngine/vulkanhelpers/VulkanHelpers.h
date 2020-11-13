@@ -282,10 +282,10 @@ public:
 
 
     static vk::UniqueShaderModule createShaderModule(
-        const vk::UniqueDevice& device,
+        const vk::Device& device,
         const Vector<char>& code)
     {
-        return device->createShaderModuleUnique({
+        return device.createShaderModuleUnique({
             vk::ShaderModuleCreateFlags(),
             code.size(),
             reinterpret_cast<const uint32_t*>(code.data())
@@ -330,7 +330,7 @@ public:
         const vk::ImageUsageFlags& imageUsage,
         const vk::MemoryPropertyFlagBits& desiredMemoryProperties,
         const vk::ImageAspectFlags& aspectFlags,
-        const vk::UniqueDevice& device,
+        const vk::Device& device,
         const vma::Allocator& allocator,
         // output
         vk::Image& outputImage,
@@ -373,16 +373,15 @@ public:
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        outputImageView = checkVkResult(device->createImageView(viewInfo));
+        outputImageView = checkVkResult(device.createImageView(viewInfo));
     }
 
 
 
-
-
     static void createTextureImage(
-        const char* filename,
-        const vk::UniqueDevice& device,
+        const String& filename,
+        const vk::Format& format,
+        const vk::Device& device,
         const vk::Queue& queue,
         const vk::CommandPool& commandPool,
         const vma::Allocator& allocator,
@@ -392,11 +391,46 @@ public:
         uint32_t& outMipLevels)
     {
         int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load(
-            filename, &texWidth, &texHeight,
-            &texChannels, STBI_rgb_alpha);
-        BOF_ASSERT_MSG(pixels != nullptr, "can't load %s", filename);
 
+        stbi_uc* pixels = stbi_load(
+            filename.c_str(),
+            &texWidth, &texHeight,
+            &texChannels,
+            STBI_rgb_alpha);
+
+        BOF_ASSERT_MSG(pixels != nullptr, "can't load %s", filename.c_str());
+
+        createTextureImage(
+            pixels,
+            texWidth,
+            texHeight,
+            format,
+            device,
+            queue,
+            commandPool,
+            allocator,
+            // output
+            outputImage,
+            outputImageAllocation,
+            outMipLevels);
+
+        stbi_image_free(pixels);
+    }
+
+    static void createTextureImage(
+        const unsigned char* pixels,
+        const int texWidth,
+        const int texHeight,
+        const vk::Format& format,
+        const vk::Device& device,
+        const vk::Queue& queue,
+        const vk::CommandPool& commandPool,
+        const vma::Allocator& allocator,
+        // output
+        vk::Image& outputImage,
+        vma::Allocation& outputImageAllocation,
+        uint32_t& outMipLevels)
+    {
         outMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
         const vk::DeviceSize imageSize = texWidth * texHeight * 4;
@@ -417,16 +451,13 @@ public:
         memcpy(data, pixels, static_cast<size_t>(imageSize));
         allocator.unmapMemory(stagingBufferAllocation);
 
-        stbi_image_free(pixels);
-
-
 
         vk::ImageCreateInfo imageInfo{};
         imageInfo.imageType = vk::ImageType::e2D;
         imageInfo.extent = vk::Extent3D{ (uint32_t)texWidth, (uint32_t)texHeight, 1 };
         imageInfo.mipLevels = outMipLevels;
         imageInfo.arrayLayers = 1;
-        imageInfo.format = vk::Format::eR8G8B8A8Srgb;
+        imageInfo.format = format;
         imageInfo.tiling = vk::ImageTiling::eOptimal;
         imageInfo.initialLayout = vk::ImageLayout::eUndefined;
         imageInfo.usage = vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
@@ -474,12 +505,14 @@ public:
 
 
 
+
+
     static void generateMipmaps(
         vk::Image image,
         uint32_t texWidth,
         uint32_t texHeight,
         uint32_t mipLevels,
-        const vk::UniqueDevice& device,
+        const vk::Device& device,
         const vk::Queue& queue,
         const vk::CommandPool& commandPool)
 
@@ -586,7 +619,7 @@ public:
         vk::ImageLayout oldLayout,
         vk::ImageLayout newLayout,
         uint32_t mipLevels,
-        const vk::UniqueDevice& device,
+        const vk::Device& device,
         const vk::Queue& queue,
         const vk::CommandPool& commandPool)
     {
@@ -673,7 +706,7 @@ public:
 
 
     static vk::CommandBuffer beginSingleTimeCommands(
-        const vk::UniqueDevice& device,
+        const vk::Device& device,
         const vk::CommandPool& commandPool)
 
     {
@@ -682,7 +715,7 @@ public:
         allocInfo.commandPool = commandPool;
         allocInfo.commandBufferCount = 1;
 
-        const vk::CommandBuffer commandBuffer = checkVkResult(device->allocateCommandBuffers(allocInfo))[0];
+        const vk::CommandBuffer commandBuffer = checkVkResult(device.allocateCommandBuffers(allocInfo))[0];
 
         vk::CommandBufferBeginInfo beginInfo = {};
         beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
@@ -695,7 +728,7 @@ public:
     static void endSingleTimeCommands(
         const vk::CommandBuffer& commandBuffer,
         const vk::Queue& graphicsQueue,
-        const vk::UniqueDevice& device,
+        const vk::Device& device,
         const vk::CommandPool& commandPool)
     {
         commandBuffer.end();
@@ -709,7 +742,7 @@ public:
         graphicsQueue.submit(submitInfos, nullptr);
         graphicsQueue.waitIdle();
 
-        device->freeCommandBuffers(commandPool, commandBuffers);
+        device.freeCommandBuffers(commandPool, commandBuffers);
     }
 
     static void copyBuffer(
@@ -717,7 +750,7 @@ public:
         vk::Buffer dstBuffer, // output
         vk::DeviceSize size,
         const vk::Queue& graphicsQueue,
-        const vk::UniqueDevice& device,
+        const vk::Device& device,
         const vk::CommandPool& commandPool)
     {
         const vk::CommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
@@ -739,7 +772,7 @@ public:
         const vk::Image image,
         const uint32_t width,
         const uint32_t height,
-        const vk::UniqueDevice& device,
+        const vk::Device& device,
         const vk::Queue& graphicsQueue,
         const vk::CommandPool& commandPool)
     {
@@ -770,7 +803,7 @@ public:
     static void createAndFillBuffer(
         const T& sourceDataArray,
         vk::BufferUsageFlagBits usageBits,
-        const vk::UniqueDevice& device,
+        const vk::Device& device,
         const vk::Queue& queue,
         const vk::CommandPool& commandPool,
         vma::Allocator allocator,
@@ -929,79 +962,128 @@ namespace bofgltf
     struct Texture
     {
         vk::Format m_format = vk::Format::eUndefined;
-        vk::Image m_image;
-        vk::ImageLayout m_imageLayout;
-        vma::Allocation m_imageAllocation;
-        vk::ImageView m_imageView;
-        uint32_t m_width;
-        uint32_t m_height;
-        uint32_t m_mipLevels;
-        uint32_t m_layerCount;
-        vk::DescriptorImageInfo m_descriptor;
-        vk::Sampler m_sampler;
+        vk::Image m_image = nullptr;
+        vk::ImageLayout m_imageLayout = vk::ImageLayout::eUndefined;
+        vma::Allocation m_imageAllocation = nullptr;
+        vk::ImageView m_imageView = nullptr;
+        uint32_t m_width = 0;
+        uint32_t m_height = 0;
+        uint32_t m_mipLevels = 0;
+        //uint32_t m_layerCount;
+        vk::DescriptorImageInfo m_descriptor{};
+        vk::Sampler m_sampler{};
 
 
         void fromGltfImage(
             const tinygltf::Image& gltfImage,
             const String& path,
             const vk::Device& device,
-            const vk::Queue& transferQueue)
+            const vk::Queue& transferQueue,
+            const vk::CommandPool& commandPool,
+            const vma::Allocator& allocator)
         {
-            BOF_UNUSED4(gltfImage, path, device, transferQueue);
+            UNUSED(path);
 
-            bool isKtx = false;
+            // assume not ktx;
+            //bool isKtx = false;
 
-            if (!isKtx)
-            {
-                // maybe not const because might have to delete
-                unsigned char* buffer = nullptr;
-                VkDeviceSize bufferSize = 0;
-                bool deleteBuffer = false;
+            // maybe not const because might have to delete
+            unsigned char* buffer = const_cast<unsigned char*>(&gltfImage.image[0]);
+            //VkDeviceSize bufferSize = gltfImage.image.size();
+            //bool deleteBuffer = false;
 
-                if (gltfImage.component == 3)
-                {
-                    bufferSize = gltfImage.width * gltfImage.height * 4;
-                    buffer = new unsigned char[bufferSize];
-                    unsigned char* rgba = buffer;
-                    unsigned char* rgb = const_cast<unsigned char*>(&gltfImage.image[0]);
-                    for (size_t i = 0; i < gltfImage.width * gltfImage.height; ++i)
-                    {
-                        for (int32_t j = 0; j < 3; ++j)
-                        {
-                            rgba[j] = rgb[j];
-                        }
-                        rgba += 4;
-                        rgb += 3;
-                    }
-                    deleteBuffer = true;
-                }
-                else
-                {
-                    buffer = const_cast<unsigned char*>(&gltfImage.image[0]);
-                    bufferSize = gltfImage.image.size();
-                }
-
-                m_format = vk::Format::eR8G8B8A8Unorm;
-
-                // todo: check format properties against physical device...
-
-                m_width = gltfImage.width;
-                m_height = gltfImage.height;
+            BOF_ASSERT(gltfImage.component == 4);
+            //if (gltfImage.component == 3)
+            //{
+            //    bufferSize = gltfImage.width * gltfImage.height * 4;
+            //    buffer = new unsigned char[bufferSize];
+            //    unsigned char* rgba = buffer;
+            //    unsigned char* rgb = const_cast<unsigned char*>(&gltfImage.image[0]);
+            //    for (size_t i = 0; i < gltfImage.width * gltfImage.height; ++i)
+            //    {
+            //        for (int32_t j = 0; j < 3; ++j)
+            //        {
+            //            rgba[j] = rgb[j];
+            //        }
+            //        rgba += 4;
+            //        rgb += 3;
+            //    }
+            //    deleteBuffer = true;
+            //}
+ 
+            m_format = vk::Format::eR8G8B8A8Unorm;
 
 
 
+            m_width = gltfImage.width;
+            m_height = gltfImage.height;
+
+            // todo: check format properties against physical device...
+            VulkanHelpers::createTextureImage(
+                buffer,
+                (int)m_width,
+                (int)m_height,
+                m_format,
+                device,
+                transferQueue,
+                commandPool,
+                allocator,
+                // output
+                m_image,
+                m_imageAllocation,
+                m_mipLevels);
 
 
 
+            vk::SamplerCreateInfo samplerInfo{};
+            samplerInfo.magFilter = vk::Filter::eLinear;
+            samplerInfo.minFilter = vk::Filter::eLinear;
+            samplerInfo.addressModeU = vk::SamplerAddressMode::eMirroredRepeat;
+            samplerInfo.addressModeV = vk::SamplerAddressMode::eMirroredRepeat;
+            samplerInfo.addressModeW = vk::SamplerAddressMode::eMirroredRepeat;
+            samplerInfo.anisotropyEnable = VK_TRUE;
+            samplerInfo.maxAnisotropy = 16.0f;
+            //samplerInfo.borderColor = vk::BorderColor::eIntOpaqueBlack;
+            samplerInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;
+            samplerInfo.unnormalizedCoordinates = VK_FALSE;
+            samplerInfo.compareEnable = VK_FALSE;
+            samplerInfo.compareOp = vk::CompareOp::eNever;
+            samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;
+            samplerInfo.mipLodBias = 0.0f;
+            samplerInfo.minLod = 0.0f;
+            samplerInfo.maxLod = static_cast<float>(m_mipLevels);
+
+            m_sampler = checkVkResult(device.createSampler(samplerInfo));
 
 
 
-            }
+            vk::ImageViewCreateInfo viewInfo{};
+            viewInfo.image = m_image;
+            viewInfo.viewType = vk::ImageViewType::e2D;
+            viewInfo.format = m_format;
+            viewInfo.components = { vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA };
+            viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = m_mipLevels;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 1;
 
+            m_imageView = checkVkResult(device.createImageView(viewInfo));
 
+            m_imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+
+            m_descriptor.sampler = m_sampler;
+            m_descriptor.imageView = m_imageView;
+            m_descriptor.imageLayout = m_imageLayout;
 
         }
     };
+
+
+
+
+
+
 
     struct Material
     {
@@ -1020,12 +1102,56 @@ namespace bofgltf
         Texture* m_diffuseTexture = nullptr;
     };
 
+    struct Mesh
+    {
+        
+    };
+
+    struct Skin
+    {
+        
+    };
+
+
+    struct Node
+    {
+        glm::mat4 m_localMatrix{};
+        glm::mat4 m_matrix{};
+
+        glm::quat m_rotation{};
+        glm::vec3 m_translation{};
+        glm::vec3 m_scale{ 1.0f };
+
+        int m_parentIndex = -1;
+        uint32_t m_index;
+        Vector<int> m_childrenNodeIndices;
+        Mesh* m_mesh;
+        Skin* m_skin;
+        int32_t m_skinIndex = -1;
+
+        String m_name;
+        
+
+        glm::mat4 getMatrix() { return glm::mat4{}; }
+        void update(){}
+
+        ~Node() {}
+    };
+
+
+
+
     struct Model
     {
         vk::Device m_device;
 
         Vector<Texture> m_textures;
         Vector<Material> m_materials;
+
+        Vector<Node> m_linearNodes;
+
+        // root nodes
+        Vector<int> m_childrenNodeIndices; 
 
         Texture m_emptyTexture;
 
@@ -1035,12 +1161,14 @@ namespace bofgltf
             String filename,
             const vk::Device& device,
             vk::Queue& transferQueue,
+            vk::CommandPool& commandPool,
+            vma::Allocator& allocator,
             uint32_t fileLoadingFlags = FileLoadingFlags::None,
             float scale = 1.0f)
         {
+            UNUSED(scale);
             PROFILE(ModelLoadFromFile);
 
-            BOF_UNUSED5(filename, device, transferQueue, fileLoadingFlags, scale);
             tinygltf::Model gltfModel;
             tinygltf::TinyGLTF gltfContext;
 
@@ -1063,19 +1191,12 @@ namespace bofgltf
             bool fileLoaded = gltfContext.LoadASCIIFromFile(&gltfModel, &error, &warning, filename);
             BOF_ASSERT_MSG(fileLoaded, "can't load file %s", filename.c_str());
 
-            Vector<uint32_t> indexBuffer;
-            Vector<Vertex> vertexBuffer;
-
             if (!(fileLoadingFlags & FileLoadingFlags::DontLoadImages))
             {
                 for (const tinygltf::Image& image : gltfModel.images)
                 {
                     bofgltf::Texture& texture = m_textures.emplace_back(bofgltf::Texture{});
-                    texture.fromGltfImage(image, path, device, transferQueue);
-
-
-
-
+                    texture.fromGltfImage(image, path, m_device, transferQueue, commandPool, allocator);
                 }
             }
 
@@ -1203,7 +1324,107 @@ namespace bofgltf
             }
             // default material
             m_materials.push_back(Material{});
+
+
+
+            Vector<uint32_t> indexBuffer;
+            Vector<Vertex> vertexBuffer;
+
+
+
+            int defaultSceneIndex = gltfModel.defaultScene;
+            if (defaultSceneIndex < 0)
+            {
+                defaultSceneIndex = 0;
+            }
+            const tinygltf::Scene& scene = gltfModel.scenes[defaultSceneIndex];
+
+            const Vector<int>& sceneNodes = scene.nodes;
+
+            m_linearNodes.resize(gltfModel.nodes.size());
+
+            for (size_t i = 0; i < sceneNodes.size(); i++)
+            {
+                const int nodeIndex = sceneNodes[i];
+                const tinygltf::Node& node = gltfModel.nodes[nodeIndex];
+
+                loadNode(
+                    -1, 
+                    node,
+                    nodeIndex,
+                    gltfModel,
+                    indexBuffer,
+                    vertexBuffer);
+
+
+            }
+
+
+
+
+
         }
+
+
+
+
+        void loadNode(
+            int parentIndex,
+            const tinygltf::Node& node,
+            const int nodeIndex,
+            const tinygltf::Model& model,
+            // to fill
+            Vector<uint32_t>& indexBuffer,
+            Vector<Vertex>& vertexBuffer)
+        {
+            UNUSED(model, indexBuffer, vertexBuffer);
+
+            bofgltf::Node& newNode = m_linearNodes[nodeIndex];
+
+            newNode.m_index = nodeIndex;
+            newNode.m_parentIndex = parentIndex;
+            newNode.m_name = node.name;
+            newNode.m_skinIndex = node.skin;
+            newNode.m_matrix = glm::mat4(1.0f);
+
+            if (node.translation.size() == 3)
+            {
+                newNode.m_translation = glm::make_vec3(node.translation.data());
+            }
+            if (node.rotation.size() == 4)
+            {
+                newNode.m_rotation = glm::make_quat(node.rotation.data());
+            }
+            if (node.scale.size() == 3)
+            {
+                newNode.m_scale = glm::make_vec3(node.scale.data());
+            }
+            if (node.matrix.size() == 16)
+            {
+                newNode.m_matrix = glm::make_mat4x4(node.matrix.data());
+            }
+
+            for (int childNodeIndex : node.children)
+            {
+                const tinygltf::Node& childNode = model.nodes[childNodeIndex];
+                loadNode(nodeIndex, childNode, childNodeIndex, model, indexBuffer, vertexBuffer);
+            }
+
+
+
+
+
+            if (parentIndex != -1)
+            {
+                m_linearNodes[parentIndex].m_childrenNodeIndices.push_back(nodeIndex);
+            }
+            else
+            {
+                m_childrenNodeIndices.push_back(nodeIndex);
+            }
+
+        }
+
 
     };
 

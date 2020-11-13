@@ -323,7 +323,8 @@ private:
 
             VulkanHelpers::createTextureImage(
                 m_texturePath.c_str(),
-                m_device,
+                vk::Format::eR8G8B8A8Srgb,
+                m_device.get(),
                 m_graphicsQueue,
                 m_commandPool,
                 m_allocator,
@@ -444,7 +445,9 @@ private:
             model.loadFromFile(
                 filename,
                 m_device.get(),
-                m_graphicsQueue);
+                m_graphicsQueue,
+                m_commandPool,
+                m_allocator);
 
         }
         {
@@ -454,7 +457,7 @@ private:
             VulkanHelpers::createAndFillBuffer(
                 m_vertices,
                 vk::BufferUsageFlagBits::eVertexBuffer,
-                m_device,
+                m_device.get(),
                 m_graphicsQueue,
                 m_commandPool,
                 m_allocator,
@@ -468,7 +471,7 @@ private:
             VulkanHelpers::createAndFillBuffer(
                 m_indices,
                 vk::BufferUsageFlagBits::eIndexBuffer,
-                m_device,
+                m_device.get(),
                 m_graphicsQueue,
                 m_commandPool,
                 m_allocator,
@@ -518,7 +521,7 @@ private:
 
             ImGui::CreateContext();
             ImGuiIO& io = ImGui::GetIO();
-            BOF_UNUSED(io);
+            UNUSED(io);
 
             // Create Descriptor Pool for imgui
 
@@ -785,8 +788,8 @@ private:
             Vector<char> vertShaderCode = VulkanHelpers::readFile("Data/BuiltShaders/simpleTextured.vert.spv");
             Vector<char> fragShaderCode = VulkanHelpers::readFile("Data/BuiltShaders/simpleTextured.frag.spv");
 
-            vk::UniqueShaderModule vertShaderModule = VulkanHelpers::createShaderModule(m_device, vertShaderCode);
-            vk::UniqueShaderModule fragShaderModule = VulkanHelpers::createShaderModule(m_device, fragShaderCode);
+            vk::UniqueShaderModule vertShaderModule = VulkanHelpers::createShaderModule(m_device.get(), vertShaderCode);
+            vk::UniqueShaderModule fragShaderModule = VulkanHelpers::createShaderModule(m_device.get(), fragShaderCode);
 
             Vector<vk::PipelineShaderStageCreateInfo> shaderStages;
             {
@@ -937,7 +940,7 @@ private:
                 vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment,
                 vk::MemoryPropertyFlagBits::eDeviceLocal,
                 vk::ImageAspectFlagBits::eColor,
-                m_device,
+                m_device.get(),
                 m_allocator,
                 // output
                 m_colorImage,
@@ -959,7 +962,7 @@ private:
                 vk::ImageUsageFlagBits::eDepthStencilAttachment,
                 vk::MemoryPropertyFlagBits::eDeviceLocal,
                 vk::ImageAspectFlagBits::eDepth,
-                m_device,
+                m_device.get(),
                 m_allocator,
                 // output
                 m_depthImage,
@@ -972,7 +975,7 @@ private:
                 vk::ImageLayout::eUndefined,
                 vk::ImageLayout::eDepthAttachmentOptimal,
                 mipLevelsJustOne,
-                m_device, m_graphicsQueue, m_commandPool);
+                m_device.get(), m_graphicsQueue, m_commandPool);
         }
 
         {
@@ -1300,9 +1303,9 @@ private:
                 PROFILE(CreateImguiFonts);
                 BOF_ASSERT(m_imguiCommandPool);
 
-                const vk::CommandBuffer fontCommandBuffer = VulkanHelpers::beginSingleTimeCommands(m_device, m_imguiCommandPool);
+                const vk::CommandBuffer fontCommandBuffer = VulkanHelpers::beginSingleTimeCommands(m_device.get(), m_imguiCommandPool);
                 ImGui_ImplVulkan_CreateFontsTexture(fontCommandBuffer);
-                VulkanHelpers::endSingleTimeCommands(fontCommandBuffer, m_graphicsQueue, m_device, m_imguiCommandPool);
+                VulkanHelpers::endSingleTimeCommands(fontCommandBuffer, m_graphicsQueue, m_device.get(), m_imguiCommandPool);
                 ImGui_ImplVulkan_DestroyFontUploadObjects();                
             }
         }
