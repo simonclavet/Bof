@@ -17,6 +17,7 @@
 #include "external/pods/pods.h"
 #include "external/pods/buffers.h"
 
+#include "utils/Utils.h"
 
 
 //#ifdef _DEBUG
@@ -1847,6 +1848,21 @@ struct Hoho final : public GoodSerializable
     int pouf{ 345 };
     std::string zomono{ "crapounet est mon ami" };
 
+    void destroy(){}
+
+    inline static int i = 0;
+
+    Hoho()
+    {
+        LOG("creating {}", i);
+        i++;
+    }
+    ~Hoho()
+    {
+        i--;
+        LOG("destructor {}", i);
+    }
+
     GOOD_SERIALIZABLE(Hoho, GOOD_VERSION(1)
         , GOOD(pouf)
         , GOOD(zomono)
@@ -1856,23 +1872,52 @@ struct Hoho final : public GoodSerializable
 
 struct Allo final : public GoodSerializable
 {
-    int someInt{ 3 };
-    float someFloat{ 4.5f };
-    std::vector<int> someIntVec{ 3, 6, 7 };
-    std::string someString{ "bof tu sais" };
-    Hoho someHoho;
+    // serialized properties
+    int m_someInt{ 3 };
+    float m_someFloat{ 4.5f };
+    std::vector<int> m_someIntVec{ 3, 6, 7 };
+    std::string m_someString{ "bof tu sais" };
+    //Hoho m_someHoho;
 
+    // runtime weak pointers
+    int* m_pointerToSomethingElse = nullptr;
+
+    // owned resources (heap objects, sockets, files, gpu stuff)
+    Hoho* m_someOwnedHeapHoho = nullptr;
+
+    // Init takes some unowned context, and may create owned pointers
+    // Can't have constructors or destructors because of batch deserialization from file or network
+    // Also want trivial copy without boilerplate. So that we can resize vectors of data without worrying.
+    // If there is no owned resources, trivial equal should also work.
+    void init(int* aPointerToSomethingElse)
+    {
+        m_pointerToSomethingElse = aPointerToSomethingElse;
+        m_someOwnedHeapHoho = new Hoho();
+    }
+
+    // destroy owned things
+    void destroy()
+    {
+        if (m_someOwnedHeapHoho)
+        {
+            m_someOwnedHeapHoho->destroy();
+            delete m_someOwnedHeapHoho;
+            m_someOwnedHeapHoho = nullptr;
+        }
+    }
+
+    // don't implement destructors, actually
     ~Allo()
     {
-        LOG("bye");
+        LOG("bye allo");
     }
 
     GOOD_SERIALIZABLE(Allo, GOOD_VERSION(1)
-        , GOOD(someInt)
-        , GOOD(someFloat)
-        , GOOD(someIntVec)
-        , GOOD(someString)
-        , GOOD(someHoho)
+        , GOOD(m_someInt)
+        , GOOD(m_someFloat)
+        , GOOD(m_someIntVec)
+        , GOOD(m_someString)
+//        , GOOD(m_someHoho)
     );
 
 };
@@ -1886,9 +1931,51 @@ void prepareMyGridWithComponentVectors(ComponentGrid& grid)
 }
 
 
+
+
 int main(int /*argc*/, char** /*argv*/)
 {
+    Vector<Allo> allos;
+    allos.resize(3);
 
+    int wackaInt = 34;
+
+    Allo aa;
+    aa.init(&wackaInt);
+
+    GoodSerializable* gs = &aa;
+
+    bool itIsAllo = gs->InstanceOf<Allo>();
+    UNUSED(itIsAllo);
+
+
+    // don't do that. That's the only thing you can't do, and the compiler can't prevent you from doing.
+    Allo allo2 = aa;
+
+    allo2.destroy();
+
+    
+    Hoho* hoho = aa.m_someOwnedHeapHoho;
+    UNUSED(hoho);
+
+    for (int i = 0; i < allos.size(); i++)
+    {
+        allos[i].init(&wackaInt);
+    }
+
+    for (int i = 0; i < 3; i++)
+    {
+        Allo& allo = allos.emplace_back(Allo{});
+        allo.init(&wackaInt);
+    }
+
+    BOF_ASSERT(allos[0] == allos[1]);
+
+    for (int i = 0; i < allos.size(); i++)
+    {
+        allos[i].destroy();
+    }
+    allos.clear();
 
     Bof::Log::Init();
 
@@ -1917,18 +2004,18 @@ int main(int /*argc*/, char** /*argv*/)
     //Allo* newAlloComp = grid.GetCompVector<Allo>()->AddEntityId(myEntity0);
     //Allo* newAlloComp = GET_COMPS(grid, Allo).AddEntityId(myEntity0);
     Allo* newAlloComp = grid.AddComp<Allo>(myEntity0);
-    newAlloComp->someInt = 56;
+    newAlloComp->m_someInt = 56;
 
     GoodId myEntity1 = entityIdGenerator++;
     {
         Allo* newAlloComp1 = grid.AddComp<Allo>(myEntity1);
-        newAlloComp1->someInt = 588;
+        newAlloComp1->m_someInt = 588;
     }
 
 
     {
         Allo* retreivedAlloComp1 = grid.GetCompIfExists<Allo>(myEntity1);
-        LOG("{}", retreivedAlloComp1->someInt);
+        LOG("{}", retreivedAlloComp1->m_someInt);
 
     }
 

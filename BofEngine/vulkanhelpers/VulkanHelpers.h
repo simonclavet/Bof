@@ -1102,9 +1102,57 @@ namespace bofgltf
         Texture* m_diffuseTexture = nullptr;
     };
 
-    struct Mesh
+    struct Primitive
     {
         
+    };
+
+    struct Mesh
+    {
+        vk::Device m_device;
+        vma::Allocator m_allocator;
+
+        struct UniformBuffer
+        {
+            vk::Buffer m_buffer;
+            vma::Allocation m_allocation;
+            vk::DescriptorBufferInfo m_descriptor{};
+            vk::DescriptorSet m_descriptorSet = nullptr;
+            void* m_mapped = nullptr;
+        };
+
+        UniformBuffer m_uniformBuffer{};
+
+
+        struct UniformBlock
+        {
+            glm::mat4 m_matrix;
+            glm::mat4 m_jointMatrix[64]{};
+            float m_jointCount{ 0 };
+        };
+
+        UniformBlock m_uniformBlock;
+
+
+        Vector<Primitive*> m_primitives;
+        String m_name;
+
+        Mesh(
+            vk::Device device,
+            vma::Allocator allocator,
+            glm::mat4 matrix)
+        {
+            m_device = device;
+            m_allocator = allocator;
+            m_uniformBlock.m_matrix = matrix;
+
+
+        }
+
+        ~Mesh()
+        {
+            
+        }
     };
 
     struct Skin
@@ -1410,7 +1458,14 @@ namespace bofgltf
                 loadNode(nodeIndex, childNode, childNodeIndex, model, indexBuffer, vertexBuffer);
             }
 
+            if (node.mesh > -1)
+            {
+                //const int meshIndex = node.mesh;
+                //const tinygltf::Mesh& tinygltfMesh = model.meshes[meshIndex];
 
+                //Mesh* newMesh = new Mesh();
+                //newMesh->m_name = tinygltfMesh.name;
+            }
 
 
 

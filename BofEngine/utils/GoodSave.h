@@ -51,6 +51,102 @@ enum class GoodFormat : int
 
 
 
+/*
+You have a simple class. You want to save objects to file or send them over network.
+Just inherit from GoodSerializable and use one simple macro, like this:
+
+struct Foo : public GoodSerializable
+{
+    // serialized properties
+    int m_someInt{ 3 };
+    float m_someFloat{ 4.5f };
+    std::vector<int> m_someIntVec{ 3, 6, 7 };
+    std::string m_someString{ "hello, I am serializable as json or binary, with very good performance." };
+
+    GOOD_SERIALIZABLE(Foo, GOOD_VERSION(1)
+        , GOOD(m_someInt)
+        , GOOD(m_someFloat)
+        , GOOD(m_someIntVec)
+        , GOOD(m_someString)
+    );
+};
+
+You can have other GoodSerializables as members. No problem. But no pointers.
+You can also have vectors or maps containing other GoodSerializables.
+
+Get the name of the class type:
+std::string className = Foo::GetClassName();
+
+Get the hashed id (just a uint64_t) of the class type:
+uint64_t classId = Foo::GetClassId();
+
+You can serialize your object to a file with
+Foo thing;
+std::string filenameWithoutExtension = "somepath/data/thing"
+GoodHelpers::WriteToFile(thing, filenameWithoutExtension, GoodFormat::Binary);
+or
+GoodHelpers::WriteToFile(thing, filenameWithoutExtension, GoodFormat::Json);
+
+and read it back with
+Foo deserializedThing;
+GoodHelpers::ReadFromFile(deserializedThing, filenameWithoutExtension, GoodFormat::Binary);
+or
+GoodHelpers::ReadFromFile(deserializedThing, filenameWithoutExtension, GoodFormat::Json);
+
+Get a json string to easily look at your object:
+std::string s = thing.ToString();
+
+Now, the interesting part (and the reason we need to subclass GoodSerializable in the first place),
+is that you can deserialize an object even if you don't know its type at the receiving end.
+
+If you have a base class GoodSerializable instance, ask for its type with
+uint64_t theTypeOfThing = thing.GetClassIdVirtual();
+or check
+bool itIsAFoo = thing.InstanceOf<Foo>();
+
+For example, dealing with some unknown object from the network is easy now.
+Just serialize and deserialize it like this:
+
+
+Foo thing;
+thing.m_someInt = 234;
+
+// ResizableOutputBuffer is just a wrapper on a vector of bytes.
+pods::ResizableOutputBuffer outputBuffer;
+GoodHelpers::SerializeTyped(outputBuffer, thing, GoodFormat.Binary);
+// send this buffer to file or socket...
+
+// on the other end:
+pods::InputBuffer inputBuffer = ...; // bytes from somewhere
+GoodSerializable* deserializedThing = GoodHelpers::DeserializeTyped(inputBuffer, GoodFormat.Binary);
+
+// now you can do whatever with the deserialized thing, for example cast it to what it might be:
+switch(deserializedThing->GetClassIdVirtual())
+{
+    case Foo::GetClassId():
+    {    
+        const Foo& fooThing = deserializedThing->Cast<Foo>();
+        // process fooThing...
+        break;
+    }
+    case Bar::GetClassId():
+    {    
+        const Bar& barThing = deserializedThing->Cast<Bar>();
+        // process barThing...
+        break;
+    }
+    ...
+}
+
+
+
+Don't make constructors or destructors. If you want, use custom methods like
+init(... some context for init ...) and destroy(). But you have to deal with them yourself.
+You can allocate more stuff on the heap, and sockets, and gpu stuff if you want but they can't be
+serialized and deserialized automatically. Only the POD part of the struct is dealt with here.
+
+
+*/
 
 class GoodSerializable
 {
@@ -72,6 +168,9 @@ public:
     inline const T& Cast() const { return static_cast<const T&>(*this); }
     
     inline bool InstanceOf(GoodId classId) const { return classId == GetClassIdVirtual(); }
+
+    template<typename T>
+    inline bool InstanceOf() const { return InstanceOf(T::GetClassId()); }
 
 
 
@@ -182,6 +281,10 @@ private:
         pods::InputBuffer in(s.data(), s.size()); \
         pods::JsonDeserializer<decltype(in)> serializer(in); \
         serializer.load(*this); \
+    }\
+    bool operator==(const NAME& other) const\
+    {\
+        return GoodHelpers::AreEqual(*this, other);\
     }
 
 
