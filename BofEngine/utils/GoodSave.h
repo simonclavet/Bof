@@ -1,6 +1,6 @@
 #pragma once
 
-#include <assert.h>
+//#include <assert.h>
 
 #include <string>
 #include <fstream>
@@ -17,20 +17,10 @@
 #include <unordered_map>
 
 
-constexpr uint32_t Hash32_CT(const char* str, size_t n, uint32_t basis = UINT32_C(2166136261)) 
-{
-    return n == 0 ? basis : Hash32_CT(str + 1, n - 1, (basis ^ str[0]) * UINT32_C(16777619));
-}
 
 constexpr uint64_t Hash64_CT(const char* str, size_t n, uint64_t basis = UINT64_C(14695981039346656037)) 
 {
     return n == 0 ? basis : Hash64_CT(str + 1, n - 1, (basis ^ str[0]) * UINT64_C(1099511628211));
-}
-
-template< size_t N >
-constexpr uint32_t Hash32_CT(const char(&s)[N]) 
-{
-    return Hash32_CT(s, N - 1);
 }
 
 template< size_t N >
@@ -258,8 +248,6 @@ private:
     \
     inline static void RegisterClass() {RegisterClassInternal<NAME>();}\
     \
-    inline bool Equals(const NAME& other) const { return GoodHelpers::AreEqual(*this, other); } \
-    \
     inline pods::Error DeserializeVirtual(pods::JsonDeserializer<pods::InputBuffer>& jsonDeserializer) override final \
     {\
         return jsonDeserializer.load(*this);\
@@ -400,7 +388,6 @@ public:
             filename.append(".bin");
             pods::BinarySerializer<decltype(out)> serializer(out);
             {
-                PROFILE("Serializing binary");
                 error = serializer.save(thing); 
             }
             break;
@@ -410,7 +397,6 @@ public:
             filename.append(".json");
             pods::PrettyJsonSerializer<decltype(out)> serializer(out);
             {
-                PROFILE("Serializing json");
                 error = serializer.save(thing);
             }
             break;
@@ -435,10 +421,7 @@ public:
         myfile.open(filename, std::ios_base::out | std::ios::binary);
         if (myfile.is_open())
         {
-            {
-                PROFILE("Writing bytes");
-                myfile.write((char*)&out.data()[0], out.size());
-            }
+            myfile.write((char*)&out.data()[0], out.size());
         }
         else
         {
@@ -519,7 +502,6 @@ public:
             std::vector<char> charVecBuffer;
             size_t length;
             {
-                PROFILE("Reading bytes");
                 file.seekg(0, file.end);
                 length = file.tellg();
 
@@ -547,7 +529,6 @@ public:
             {
                 pods::BinaryDeserializer<decltype(buffer)> deserializer(buffer);
                 {
-                    PROFILE("Deserializing binary");
                     error = deserializer.load(thing);
                 }
                 break;
@@ -556,7 +537,6 @@ public:
             {
                 pods::JsonDeserializer<decltype(buffer)> deserializer(buffer);
                 {
-                    PROFILE("Deserializing json");
                     error = deserializer.load(thing);
                 }
                 break;

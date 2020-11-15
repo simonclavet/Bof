@@ -425,9 +425,13 @@ private:
             PROFILE(createVertexBuffer);
             BOF_ASSERT(!m_vertices.empty());
 
+            VkDeviceSize bufferSize = sizeof(m_vertices[0]) * m_vertices.size();
+
             VulkanHelpers::createAndFillBuffer(
-                m_vertices,
+                m_vertices.data(),
+                bufferSize,
                 vk::BufferUsageFlagBits::eVertexBuffer,
+                vma::MemoryUsage::eGpuOnly,
                 m_device.get(),
                 m_graphicsQueue,
                 m_commandPool,
@@ -439,9 +443,14 @@ private:
         {
             PROFILE(createIndexBuffer);
             BOF_ASSERT(!m_indices.empty());
+
+            VkDeviceSize bufferSize = sizeof(m_indices[0]) * m_indices.size();
+
             VulkanHelpers::createAndFillBuffer(
-                m_indices,
+                m_indices.data(),
+                bufferSize,
                 vk::BufferUsageFlagBits::eIndexBuffer,
+                vma::MemoryUsage::eGpuOnly,
                 m_device.get(),
                 m_graphicsQueue,
                 m_commandPool,

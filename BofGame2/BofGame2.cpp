@@ -442,8 +442,7 @@ private:
             //String filename = "Data/DataFromVulkanExamples/models/oaktree.gltf";
             String filename = "Data/DataFromVulkanExamples/models/deer.gltf";
 
-            bofgltf::Model model;
-            model.loadFromFile(
+            m_model.loadFromFile(
                 filename,
                 m_device.get(),
                 m_graphicsQueue,
@@ -455,9 +454,13 @@ private:
             PROFILE(createVertexBuffer);
             BOF_ASSERT(!m_vertices.empty());
 
+            VkDeviceSize bufferSize = sizeof(m_vertices[0]) * m_vertices.size();
+
             VulkanHelpers::createAndFillBuffer(
-                m_vertices,
+                m_vertices.data(),
+                bufferSize,
                 vk::BufferUsageFlagBits::eVertexBuffer,
+                vma::MemoryUsage::eGpuOnly,
                 m_device.get(),
                 m_graphicsQueue,
                 m_commandPool,
@@ -469,9 +472,14 @@ private:
         {
             PROFILE(createIndexBuffer);
             BOF_ASSERT(!m_indices.empty());
+
+            VkDeviceSize bufferSize = sizeof(m_indices[0]) * m_indices.size();
+
             VulkanHelpers::createAndFillBuffer(
-                m_indices,
+                m_indices.data(),
+                bufferSize,
                 vk::BufferUsageFlagBits::eIndexBuffer,
+                vma::MemoryUsage::eGpuOnly,
                 m_device.get(),
                 m_graphicsQueue,
                 m_commandPool,
@@ -1334,8 +1342,7 @@ private:
         m_allocator.destroyImage(m_textureImage, m_textureImageAllocation);
         m_textureImage = nullptr;
         m_textureImageAllocation = nullptr;
-        //m_device->destroyImage(m_textureImage); m_textureImage = nullptr;
-        //m_device->freeMemory(m_textureImageMemory); m_textureImageMemory = nullptr;
+
 
         m_device->destroyDescriptorSetLayout(m_descriptorSetLayout); m_descriptorSetLayout = nullptr;
 
@@ -1361,6 +1368,10 @@ private:
         m_device->destroyCommandPool(m_commandPool); m_commandPool = nullptr;
 
         m_instance->destroySurfaceKHR(m_surface); m_surface = nullptr;
+
+
+        m_model.destroy();
+
 
         m_allocator.destroy();
         
@@ -1840,6 +1851,8 @@ private:
     const std::string m_modelPath = "data/models/viking_room.obj";
     const std::string m_texturePath = "data/textures/viking_room.png";
 
+
+    bofgltf::Model m_model;
 
 };
 

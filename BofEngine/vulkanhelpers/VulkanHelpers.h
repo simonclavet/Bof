@@ -800,7 +800,7 @@ public:
 
 
     template<typename T>
-    static void createAndFillBuffer(
+    static void createAndFillBufferWithArrayOld(
         const T& sourceDataArray,
         vk::BufferUsageFlagBits usageBits,
         const vk::Device& device,
@@ -820,7 +820,7 @@ public:
             bufferInfo.size = bufferSize;
             bufferInfo.usage = vk::BufferUsageFlagBits::eTransferSrc;
             vma::AllocationCreateInfo allocInfo{};
-            allocInfo.usage = vma::MemoryUsage::eCpuToGpu;
+            allocInfo.usage = vma::MemoryUsage::eCpuOnly;
 
             CHECK_VKRESULT(allocator.createBuffer(&bufferInfo, &allocInfo, &stagingBuffer, &stagingBufferAllocation, nullptr));
         }
@@ -856,6 +856,113 @@ public:
         allocator.destroyBuffer(stagingBuffer, stagingBufferAllocation);
     }
 
+
+    static void createAndFillBuffer(
+        const void* sourceData, // if nullptr don't copy data
+        VkDeviceSize bufferSize,
+        vk::BufferUsageFlagBits bufferUsageBits,
+        vma::MemoryUsage memoryUsage,
+        const vk::Device& device,
+        const vk::Queue& queue,
+        const vk::CommandPool& commandPool,
+        vma::Allocator allocator,
+        // output
+        vk::Buffer& buffer,
+        vma::Allocation& bufferAllocation)
+    {
+        if (memoryUsage == vma::MemoryUsage::eCpuOnly ||
+            memoryUsage == vma::MemoryUsage::eCpuToGpu) // uniforms that are set every frame from cpu, not transfered, but still read by gpu.
+        {
+            // just create buffer and allocate memory. Then map and copy data.
+
+            vk::BufferCreateInfo bufferInfo{};
+            bufferInfo.size = bufferSize;
+            bufferInfo.usage = bufferUsageBits;
+
+            vma::AllocationCreateInfo allocInfo{};
+            allocInfo.usage = memoryUsage;
+
+            CHECK_VKRESULT(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer, &bufferAllocation, nullptr));
+
+            if (sourceData != nullptr)
+            {
+                void* mappedData = checkVkResult(allocator.mapMemory(bufferAllocation));
+
+                memcpy(
+                    /*dest*/mappedData,
+                    /*source*/sourceData,
+                    static_cast<size_t>(bufferSize));
+
+                allocator.unmapMemory(bufferAllocation);
+            }
+        }
+        else if (memoryUsage == vma::MemoryUsage::eGpuOnly)
+        {
+            // create the actual buffer and allocation on gpu
+            {
+                vk::BufferCreateInfo bufferInfo{};
+                bufferInfo.size = bufferSize;
+                bufferInfo.usage = vk::BufferUsageFlagBits::eTransferDst | bufferUsageBits; // transfer source, and actual usage
+
+                vma::AllocationCreateInfo allocInfo{};
+                allocInfo.usage = memoryUsage;
+
+                CHECK_VKRESULT(allocator.createBuffer(&bufferInfo, &allocInfo, &buffer, &bufferAllocation, nullptr));
+            }
+
+            if (sourceData != nullptr)
+            {
+                // need to make a staging buffer, copy to it, then and transfer with a command
+
+                vk::Buffer stagingBuffer;
+                vma::Allocation stagingBufferAllocation;
+                {
+                    vk::BufferCreateInfo bufferInfo{};
+                    bufferInfo.size = bufferSize;
+                    bufferInfo.usage = vk::BufferUsageFlagBits::eTransferSrc; // transfer source
+
+                    vma::AllocationCreateInfo allocInfo{};
+                    allocInfo.usage = vma::MemoryUsage::eCpuOnly; // correct type for a staging buffer
+
+                    CHECK_VKRESULT(allocator.createBuffer(&bufferInfo, &allocInfo, &stagingBuffer, &stagingBufferAllocation, nullptr));
+                }
+                // copy data to staging buffer
+                void* mappedData = checkVkResult(allocator.mapMemory(stagingBufferAllocation));
+                memcpy(
+                    /*dest*/mappedData,
+                    /*source*/sourceData,
+                    static_cast<size_t>(bufferSize));
+                allocator.unmapMemory(stagingBufferAllocation);
+
+
+                // transfer command
+                const vk::CommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+
+                Vector<vk::BufferCopy> copyRegions;
+                vk::BufferCopy copyRegion = {};
+                copyRegion.srcOffset = 0;
+                copyRegion.dstOffset = 0;
+                copyRegion.size = bufferSize;
+                copyRegions.push_back(copyRegion);
+
+                // transfer staging buffer to actual buffer on gpu
+                commandBuffer.copyBuffer(
+                    /*source*/stagingBuffer,
+                    /*dest*/buffer,
+                    copyRegions);
+
+                endSingleTimeCommands(commandBuffer, queue, device, commandPool);
+                // this waits for completion.
+
+                // no need for that anymore
+                allocator.destroyBuffer(stagingBuffer, stagingBufferAllocation);
+            }
+        }
+        else
+        {
+            BOF_FAIL("unsupported memory usage, for now");
+        }
+    }
 
     static vk::SampleCountFlagBits getMaxUsableSampleCount(const vk::PhysicalDevice& physicalDevice)
     {
@@ -961,6 +1068,9 @@ namespace bofgltf
     
     struct Texture
     {
+        vk::Device m_device;
+        vma::Allocator m_allocator;
+
         vk::Format m_format = vk::Format::eUndefined;
         vk::Image m_image = nullptr;
         vk::ImageLayout m_imageLayout = vk::ImageLayout::eUndefined;
@@ -983,6 +1093,9 @@ namespace bofgltf
             const vma::Allocator& allocator)
         {
             UNUSED(path);
+
+            m_device = device;
+            m_allocator = allocator;
 
             // assume not ktx;
             //bool isKtx = false;
@@ -1077,6 +1190,17 @@ namespace bofgltf
             m_descriptor.imageLayout = m_imageLayout;
 
         }
+
+
+        void destroy()
+        {
+            m_allocator.destroyImage(m_image, m_imageAllocation);
+            m_image = nullptr;
+            m_imageAllocation = nullptr;
+
+            m_device.destroyImageView(m_imageView);
+            m_device.destroySampler(m_sampler);
+        }
     };
 
 
@@ -1109,20 +1233,14 @@ namespace bofgltf
 
     struct Mesh
     {
-        vk::Device m_device;
-        vma::Allocator m_allocator;
-
         struct UniformBuffer
         {
             vk::Buffer m_buffer;
             vma::Allocation m_allocation;
             vk::DescriptorBufferInfo m_descriptor{};
             vk::DescriptorSet m_descriptorSet = nullptr;
-            void* m_mapped = nullptr;
+            void* m_mappedMemory = nullptr;
         };
-
-        UniformBuffer m_uniformBuffer{};
-
 
         struct UniformBlock
         {
@@ -1131,14 +1249,21 @@ namespace bofgltf
             float m_jointCount{ 0 };
         };
 
-        UniformBlock m_uniformBlock;
+
+        vk::Device m_device = nullptr;
+        vma::Allocator m_allocator = nullptr;
+
+        UniformBuffer m_uniformBuffer{};
+        UniformBlock m_uniformBlock{};
 
 
         Vector<Primitive*> m_primitives;
         String m_name;
 
-        Mesh(
+        void init(
             vk::Device device,
+            vk::Queue queue,
+            vk::CommandPool commandPool,
             vma::Allocator allocator,
             glm::mat4 matrix)
         {
@@ -1146,12 +1271,33 @@ namespace bofgltf
             m_allocator = allocator;
             m_uniformBlock.m_matrix = matrix;
 
+            VulkanHelpers::createAndFillBuffer(
+                &m_uniformBlock,
+                sizeof(m_uniformBlock),
+                vk::BufferUsageFlagBits::eUniformBuffer,
+                vma::MemoryUsage::eCpuToGpu,
+                device,
+                queue,
+                commandPool,
+                allocator,
+                m_uniformBuffer.m_buffer,
+                m_uniformBuffer.m_allocation);
+
+            m_uniformBuffer.m_mappedMemory = checkVkResult(allocator.mapMemory(m_uniformBuffer.m_allocation));
+
+            m_uniformBuffer.m_descriptor = vk::DescriptorBufferInfo{};
+            m_uniformBuffer.m_descriptor.buffer = m_uniformBuffer.m_buffer;
+            m_uniformBuffer.m_descriptor.offset = 0;
+            m_uniformBuffer.m_descriptor.range = sizeof(m_uniformBlock);
 
         }
 
-        ~Mesh()
+        void destroy()
         {
-            
+            m_allocator.unmapMemory(m_uniformBuffer.m_allocation);
+            m_allocator.destroyBuffer(m_uniformBuffer.m_buffer, m_uniformBuffer.m_allocation);
+            m_uniformBuffer.m_buffer = nullptr;
+            m_uniformBuffer.m_allocation = nullptr;
         }
     };
 
@@ -1173,8 +1319,8 @@ namespace bofgltf
         int m_parentIndex = -1;
         uint32_t m_index;
         Vector<int> m_childrenNodeIndices;
-        Mesh* m_mesh;
-        Skin* m_skin;
+        Mesh m_mesh; // should be id in model meshes
+        Skin* m_skin; 
         int32_t m_skinIndex = -1;
 
         String m_name;
@@ -1183,7 +1329,10 @@ namespace bofgltf
         glm::mat4 getMatrix() { return glm::mat4{}; }
         void update(){}
 
-        ~Node() {}
+        void destroy()
+        {
+            m_mesh.destroy();            
+        }
     };
 
 
@@ -1192,6 +1341,9 @@ namespace bofgltf
     struct Model
     {
         vk::Device m_device;
+        vk::Queue m_queue;
+        vk::CommandPool m_commandPool;
+        vma::Allocator m_allocator;
 
         Vector<Texture> m_textures;
         Vector<Material> m_materials;
@@ -1214,6 +1366,11 @@ namespace bofgltf
             uint32_t fileLoadingFlags = FileLoadingFlags::None,
             float scale = 1.0f)
         {
+            m_device = device;
+            m_queue = transferQueue;
+            m_commandPool = commandPool;
+            m_allocator = allocator;
+
             UNUSED(scale);
             PROFILE(ModelLoadFromFile);
 
@@ -1234,7 +1391,6 @@ namespace bofgltf
 
             String error, warning;
 
-            m_device = device;
 
             bool fileLoaded = gltfContext.LoadASCIIFromFile(&gltfModel, &error, &warning, filename);
             BOF_ASSERT_MSG(fileLoaded, "can't load file %s", filename.c_str());
@@ -1460,11 +1616,11 @@ namespace bofgltf
 
             if (node.mesh > -1)
             {
-                //const int meshIndex = node.mesh;
-                //const tinygltf::Mesh& tinygltfMesh = model.meshes[meshIndex];
+                const int meshIndex = node.mesh;
+                const tinygltf::Mesh& tinygltfMesh = model.meshes[meshIndex];
 
-                //Mesh* newMesh = new Mesh();
-                //newMesh->m_name = tinygltfMesh.name;
+                newNode.m_mesh.init(m_device, m_queue, m_commandPool, m_allocator, newNode.m_matrix);
+                newNode.m_mesh.m_name = tinygltfMesh.name;
             }
 
 
@@ -1477,9 +1633,20 @@ namespace bofgltf
             {
                 m_childrenNodeIndices.push_back(nodeIndex);
             }
-
         }
 
+
+        void destroy()
+        {
+            for (Texture& texture : m_textures)
+            {
+                texture.destroy();
+            }
+            for (Node& node : m_linearNodes)
+            {
+                node.destroy();
+            }
+        }
 
     };
 
