@@ -438,9 +438,9 @@ private:
             PROFILE(loadGltfModel);
 
             //String filename = "Data/DataFromVulkanExamples/models/plane.gltf";
-            //String filename = "Data/DataFromVulkanExamples/models/treasure_smooth.gltf";
+            String filename = "Data/DataFromVulkanExamples/models/treasure_smooth.gltf";
             //String filename = "Data/DataFromVulkanExamples/models/oaktree.gltf";
-            String filename = "Data/DataFromVulkanExamples/models/deer.gltf";
+            //String filename = "Data/DataFromVulkanExamples/models/deer.gltf";
 
             m_model.loadFromFile(
                 filename,
@@ -1370,7 +1370,7 @@ private:
         m_instance->destroySurfaceKHR(m_surface); m_surface = nullptr;
 
 
-        m_model.destroy();
+        m_model.destroy(m_allocator);
 
 
         m_allocator.destroy();
@@ -1908,6 +1908,9 @@ struct Allo final : public GoodSerializable
         m_someOwnedHeapHoho = new Hoho();
     }
 
+    Allo() = default;
+    Allo(Allo&& other) noexcept = default;
+
     // destroy owned things
     void destroy()
     {
@@ -1962,8 +1965,12 @@ int main(int /*argc*/, char** /*argv*/)
     UNUSED(itIsAllo);
 
 
-    // don't do that. That's the only thing you can't do, and the compiler can't prevent you from doing.
-    Allo allo2 = aa;
+    // don't do that. That's the only thing you can't do.
+    //Allo allo2 = aa;
+
+    Allo allo2 = std::move(aa);
+
+    LOG("{}", aa.m_someFloat);
 
     allo2.destroy();
 
@@ -1984,7 +1991,7 @@ int main(int /*argc*/, char** /*argv*/)
 
     BOF_ASSERT(allos[0] == allos[1]);
 
-    for (int i = 0; i < allos.size(); i++)
+    for (auto i = 0u; i < allos.size(); i++)
     {
         allos[i].destroy();
     }

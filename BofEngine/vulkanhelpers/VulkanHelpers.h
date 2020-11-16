@@ -6,6 +6,8 @@
 // sorry.. can't deal with std:: for such basic things, but 'using namespace std' is not a good idea.
 template<typename T>
 using Vector = std::vector<T>;
+template<typename K, typename V>
+using Map = std::map<K, V>;
 using String = std::string;
 
 
@@ -1061,10 +1063,6 @@ namespace bofgltf
         return tinygltf::LoadImageData(image, imageIndex, error, warning, req_width, req_height, bytes, size, userData);
     }
 
-    struct Vertex
-    {
-
-    };
     
     struct Texture
     {
@@ -1226,9 +1224,35 @@ namespace bofgltf
         Texture* m_diffuseTexture = nullptr;
     };
 
+    struct Dimensions
+    {
+        glm::vec3 m_min = glm::vec3(FLT_MAX);
+        glm::vec3 m_max = glm::vec3(FLT_MIN);
+        glm::vec3 m_size;
+        glm::vec3 m_center;
+        float m_radius = FLT_MAX;
+
+        void set(const glm::vec3& min, const glm::vec3& max)
+        {
+            m_min = min;
+            m_max = max;
+            m_size = max - min;
+            m_center = (max + min) * 0.5f;
+            m_radius = glm::distance(min, max) * 0.5f;
+        }
+    };
+
     struct Primitive
     {
-        
+        Dimensions m_dimensions;
+
+        uint32_t m_firstIndex = 0;
+        uint32_t m_indexCount = 0;
+        uint32_t m_firstVertex = 0;
+        uint32_t m_vertexCount = 0;
+        const Material& m_material;
+
+        Primitive(const Material& mat) : m_material(mat) {}
     };
 
     struct Mesh
@@ -1250,8 +1274,8 @@ namespace bofgltf
         };
 
 
-        vk::Device m_device = nullptr;
-        vma::Allocator m_allocator = nullptr;
+        //vk::Device m_device = nullptr;
+        //vma::Allocator m_allocator = nullptr;
 
         UniformBuffer m_uniformBuffer{};
         UniformBlock m_uniformBlock{};
@@ -1267,8 +1291,8 @@ namespace bofgltf
             vma::Allocator allocator,
             glm::mat4 matrix)
         {
-            m_device = device;
-            m_allocator = allocator;
+            //m_device = device;
+            //m_allocator = allocator;
             m_uniformBlock.m_matrix = matrix;
 
             VulkanHelpers::createAndFillBuffer(
@@ -1292,10 +1316,10 @@ namespace bofgltf
 
         }
 
-        void destroy()
+        void destroy(vma::Allocator allocator)
         {
-            m_allocator.unmapMemory(m_uniformBuffer.m_allocation);
-            m_allocator.destroyBuffer(m_uniformBuffer.m_buffer, m_uniformBuffer.m_allocation);
+            allocator.unmapMemory(m_uniformBuffer.m_allocation);
+            allocator.destroyBuffer(m_uniformBuffer.m_buffer, m_uniformBuffer.m_allocation);
             m_uniformBuffer.m_buffer = nullptr;
             m_uniformBuffer.m_allocation = nullptr;
         }
@@ -1329,22 +1353,111 @@ namespace bofgltf
         glm::mat4 getMatrix() { return glm::mat4{}; }
         void update(){}
 
-        void destroy()
+        void destroy(vma::Allocator allocator)
         {
-            m_mesh.destroy();            
+            m_mesh.destroy(allocator);
+        }
+    };
+
+    enum class VertexComponent
+    {
+        Position,
+        Normal,
+        UV,
+        Color,
+        Tangent,
+        Joint0,
+        Weight0
+    };
+
+    struct Vertex
+    {
+        glm::vec3 m_pos{};
+        glm::vec3 m_normal{};
+        glm::vec2 m_uv{};
+        glm::vec4 m_color{};
+        glm::vec4 m_joint0{};
+        glm::vec4 m_weight0{};
+        glm::vec4 m_tangent{};
+
+        inline static vk::VertexInputBindingDescription s_vertexInputBindingDescription{};
+        inline static Vector<vk::VertexInputAttributeDescription> s_vertexInputAttributeDescriptions;
+        inline static vk::PipelineVertexInputStateCreateInfo s_pipelineVertexInputStateCreateInfo{};
+        
+        static vk::VertexInputAttributeDescription getInputAttributeDescription(
+            uint32_t binding,
+            uint32_t location,
+            VertexComponent component)
+        {
+            vk::VertexInputAttributeDescription desc{};
+            desc.binding = binding;
+            desc.location = location;
+            
+            switch (component)
+            {
+                case VertexComponent::Position: 
+                    desc.format = vk::Format::eR32G32B32Sfloat;
+                    desc.offset = offsetof(Vertex, m_pos);
+                    return desc;
+                case VertexComponent::Normal:
+                    desc.format = vk::Format::eR32G32B32Sfloat;
+                    desc.offset = offsetof(Vertex, m_normal);
+                    return desc;
+                case VertexComponent::UV:
+                    desc.format = vk::Format::eR32G32Sfloat;
+                    desc.offset = offsetof(Vertex, m_uv);
+                    return desc;
+                case VertexComponent::Color:
+                    desc.format = vk::Format::eR32G32B32A32Sfloat;
+                    desc.offset = offsetof(Vertex, m_color);
+                    return desc;
+                case VertexComponent::Tangent:
+                    desc.format = vk::Format::eR32G32B32A32Sfloat;
+                    desc.offset = offsetof(Vertex, m_tangent);
+                    return desc;
+                case VertexComponent::Joint0:
+                    desc.format = vk::Format::eR32G32B32A32Sfloat;
+                    desc.offset = offsetof(Vertex, m_joint0);
+                    return desc;
+                case VertexComponent::Weight0:
+                    desc.format = vk::Format::eR32G32B32A32Sfloat;
+                    desc.offset = offsetof(Vertex, m_weight0);
+                    return desc;
+                default:
+                    BOF_FAIL("bad vertex component");
+                    return vk::VertexInputAttributeDescription{};
+            }
+        }
+
+        static vk::PipelineVertexInputStateCreateInfo* getPipelineVertexInputState(
+            const Vector<VertexComponent>& components)
+        {
+            s_vertexInputBindingDescription = vk::VertexInputBindingDescription{}
+                .setBinding(0)
+                .setStride(sizeof(Vertex))
+                .setInputRate(vk::VertexInputRate::eVertex);
+            
+            s_vertexInputAttributeDescriptions.clear();
+            uint32_t location{ 0 };
+            for (VertexComponent component : components)
+            {
+                s_vertexInputAttributeDescriptions.push_back(
+                    getInputAttributeDescription(0, location, component));
+                location++;
+            }
+
+            s_pipelineVertexInputStateCreateInfo = vk::PipelineVertexInputStateCreateInfo{}
+                .setVertexBindingDescriptionCount(1)
+                .setPVertexBindingDescriptions(&Vertex::s_vertexInputBindingDescription)
+                .setVertexAttributeDescriptions(s_vertexInputAttributeDescriptions);
+
+            return &s_pipelineVertexInputStateCreateInfo;
         }
     };
 
 
-
-
     struct Model
     {
-        vk::Device m_device;
-        vk::Queue m_queue;
-        vk::CommandPool m_commandPool;
-        vma::Allocator m_allocator;
-
         Vector<Texture> m_textures;
         Vector<Material> m_materials;
 
@@ -1360,17 +1473,12 @@ namespace bofgltf
         void loadFromFile(
             String filename,
             const vk::Device& device,
-            vk::Queue& transferQueue,
+            vk::Queue& queue,
             vk::CommandPool& commandPool,
             vma::Allocator& allocator,
             uint32_t fileLoadingFlags = FileLoadingFlags::None,
             float scale = 1.0f)
         {
-            m_device = device;
-            m_queue = transferQueue;
-            m_commandPool = commandPool;
-            m_allocator = allocator;
-
             UNUSED(scale);
             PROFILE(ModelLoadFromFile);
 
@@ -1400,7 +1508,7 @@ namespace bofgltf
                 for (const tinygltf::Image& image : gltfModel.images)
                 {
                     bofgltf::Texture& texture = m_textures.emplace_back(bofgltf::Texture{});
-                    texture.fromGltfImage(image, path, m_device, transferQueue, commandPool, allocator);
+                    texture.fromGltfImage(image, path, device, queue, commandPool, allocator);
                 }
             }
 
@@ -1556,7 +1664,11 @@ namespace bofgltf
                     -1, 
                     node,
                     nodeIndex,
-                    gltfModel,
+                    gltfModel, 
+                    device, 
+                    queue, 
+                    commandPool, 
+                    allocator,
                     indexBuffer,
                     vertexBuffer);
 
@@ -1577,6 +1689,10 @@ namespace bofgltf
             const tinygltf::Node& node,
             const int nodeIndex,
             const tinygltf::Model& model,
+            const vk::Device& device,
+            vk::Queue& queue,
+            vk::CommandPool& commandPool,
+            vma::Allocator& allocator,
             // to fill
             Vector<uint32_t>& indexBuffer,
             Vector<Vertex>& vertexBuffer)
@@ -1608,10 +1724,22 @@ namespace bofgltf
                 newNode.m_matrix = glm::make_mat4x4(node.matrix.data());
             }
 
+            // recurse on children
             for (int childNodeIndex : node.children)
             {
                 const tinygltf::Node& childNode = model.nodes[childNodeIndex];
-                loadNode(nodeIndex, childNode, childNodeIndex, model, indexBuffer, vertexBuffer);
+                loadNode(
+                    nodeIndex, 
+                    childNode, 
+                    childNodeIndex, 
+                    model, 
+                    device,
+                    queue,
+                    commandPool,
+                    allocator,
+                    // to fill
+                    indexBuffer,
+                    vertexBuffer);
             }
 
             if (node.mesh > -1)
@@ -1619,8 +1747,152 @@ namespace bofgltf
                 const int meshIndex = node.mesh;
                 const tinygltf::Mesh& tinygltfMesh = model.meshes[meshIndex];
 
-                newNode.m_mesh.init(m_device, m_queue, m_commandPool, m_allocator, newNode.m_matrix);
+                newNode.m_mesh.init(device, queue, commandPool, allocator, newNode.m_matrix);
                 newNode.m_mesh.m_name = tinygltfMesh.name;
+
+                for (const tinygltf::Primitive& tinygltfPrimitive : tinygltfMesh.primitives)
+                {
+                    if (tinygltfPrimitive.indices < 0)
+                    {
+                        continue;
+                    }
+
+
+                    const Material& emptyMaterial = m_materials.back();
+
+                    const int materialIndex = tinygltfPrimitive.material;
+
+                    const Material& mat = materialIndex > -1 ? m_materials[materialIndex] : emptyMaterial;
+
+
+                    Primitive* newPrimitive = new Primitive(mat);
+                    newNode.m_mesh.m_primitives.push_back(newPrimitive);
+
+
+                    newPrimitive->m_firstIndex = static_cast<uint32_t>(indexBuffer.size());
+                    newPrimitive->m_firstVertex = static_cast<uint32_t>(vertexBuffer.size());
+
+                    uint32_t indexCount = 0;
+                    
+                   
+                    
+                    // verts
+                    {
+                        const Map<String, int>& attributes = tinygltfPrimitive.attributes;
+                        const Vector<tinygltf::Accessor>& accessors = model.accessors;
+
+ 
+                        const tinygltf::Accessor& posAccessor = model.accessors[tinygltfPrimitive.attributes.find("POSITION")->second];
+                        //const tinygltf::BufferView& posView = model.bufferViews[posAccessor.bufferView];
+
+                        //const float* bufferPositions = reinterpret_cast<const float*>(&(model.buffers[posView.buffer].data[posAccessor.byteOffset + posView.byteOffset]));
+
+                        const float* bufferPositions =
+                            Model::getAttribute("POSITION", tinygltfPrimitive, model);
+
+                        BOF_ASSERT(bufferPositions != nullptr);
+
+                        //Map<String, int>::const_iterator foundPos = attributes.find("POSITION");
+                        //const int posAccessorIndex = foundPos->second;
+                        //const tinygltf::Accessor& posAccessor = accessors[posAccessorIndex];
+
+                        const glm::vec3 posMin = glm::make_vec3(posAccessor.minValues.data());
+                        const glm::vec3 posMax = glm::make_vec3(posAccessor.maxValues.data());
+                        newPrimitive->m_dimensions.set(posMin, posMax);
+
+                        const uint32_t vertexCount = static_cast<uint32_t>(posAccessor.count);
+                        newPrimitive->m_vertexCount = vertexCount;
+
+
+                        
+
+                        const float* bufferNormals =
+                            Model::getAttribute("NORMAL", tinygltfPrimitive, model);
+
+                        const float* bufferTexCoords =
+                            Model::getAttribute("TEXCOORD_0", tinygltfPrimitive, model);
+
+                        const float* bufferColors =
+                            Model::getAttribute("COLOR_0", tinygltfPrimitive, model);
+
+                        uint32_t numColorComponents = 0;
+
+                        if (bufferColors != nullptr)
+                        {
+                            Map<String, int>::const_iterator foundColor = attributes.find("POSITION");
+                            const tinygltf::Accessor& colorAccessor = accessors[foundColor->second];
+                            
+                            numColorComponents = colorAccessor.type == TINYGLTF_PARAMETER_TYPE_BOOL_VEC3 ? 3 : 4;
+                        }
+
+                        const float* bufferTangent =
+                            Model::getAttribute("TANGENT", tinygltfPrimitive, model);
+
+
+                        // skinning
+                        const float* bufferJoints =
+                            Model::getAttribute("JOINTS_0", tinygltfPrimitive, model);
+
+                        const float* bufferWeights =
+                            Model::getAttribute("WEIGHTS_0", tinygltfPrimitive, model);
+
+                        bool hasSkin =
+                            bufferJoints != nullptr &&
+                            bufferWeights != nullptr;
+
+                        vertexBuffer.reserve(vertexBuffer.size() + vertexCount);
+
+                        for (size_t v = 0; v < vertexCount; ++v)
+                        {
+                            Vertex& vert = vertexBuffer.emplace_back(Vertex{});
+                            vert.m_pos = glm::make_vec3(&bufferPositions[v * 3]);
+
+                            if (bufferNormals != nullptr)
+                            {
+                                vert.m_normal = glm::normalize(glm::make_vec3(&bufferNormals[v * 3]));
+                            }
+                            if (bufferTexCoords != nullptr)
+                            {
+                                vert.m_uv = glm::make_vec2(&bufferTexCoords[v * 2]);
+                            }
+
+                            if (bufferColors != nullptr)
+                            {
+                                switch (numColorComponents)
+                                {
+                                    case 3: vert.m_color = glm::vec4(glm::make_vec3(&bufferColors[v * 3]), 1.0f); break;
+                                    case 4: vert.m_color = glm::make_vec4(&bufferColors[v * 4]); break;
+                                }
+                            }
+                            else
+                            {
+                                vert.m_color = glm::vec4(1.0f);
+                            }
+
+                            if (bufferTangent != nullptr)
+                            {
+                                vert.m_tangent = glm::make_vec4(&bufferTangent[v * 4]);
+                            }
+                            if (hasSkin && bufferJoints != nullptr)
+                            {
+                                vert.m_joint0 = glm::make_vec4(&bufferJoints[v * 4]);
+                            }
+                            if (hasSkin && bufferWeights != nullptr)
+                            {
+                                vert.m_weight0 = glm::make_vec4(&bufferWeights[v * 4]);
+                            }
+
+                        }
+
+                        UNUSED(bufferPositions, bufferNormals, bufferTexCoords, bufferColors, bufferTangent, hasSkin);
+
+                    }
+
+
+                    UNUSED(indexCount);
+                }
+
+
             }
 
 
@@ -1635,8 +1907,46 @@ namespace bofgltf
             }
         }
 
+        static const float* getAttribute(
+            const char* attributeName,
+            const tinygltf::Primitive& tinygltfPrimitive,
+            const tinygltf::Model& tinygltfModel)
+        {
+            const Map<String, int>& attributes = tinygltfPrimitive.attributes;
+            const Vector<tinygltf::Accessor>& accessors = tinygltfModel.accessors;
+            const Vector<tinygltf::BufferView>& bufferViews = tinygltfModel.bufferViews;
+            const Vector<tinygltf::Buffer>& buffers = tinygltfModel.buffers;
 
-        void destroy()
+            Map<String, int>::const_iterator foundParam = attributes.find(attributeName);
+
+            if (foundParam != attributes.end())
+            {
+                const int accessorIndex = foundParam->second;
+
+                const tinygltf::Accessor& accessor = accessors[accessorIndex];
+
+                const int bufferViewIndex = accessor.bufferView;
+                const tinygltf::BufferView& view = bufferViews[bufferViewIndex];
+
+                const int bufferIndex = view.buffer;
+
+                const tinygltf::Buffer& buffer = buffers[bufferIndex];
+
+                const size_t accessorOffset = accessor.byteOffset;
+                const size_t viewOffset = view.byteOffset;
+
+                const size_t indexInBuffer = accessorOffset + viewOffset;
+
+                const void* data = &buffer.data[indexInBuffer];
+
+                return reinterpret_cast<const float*>(data);
+            }
+
+            return nullptr;
+        }
+
+
+        void destroy(vma::Allocator& allocator)
         {
             for (Texture& texture : m_textures)
             {
@@ -1644,7 +1954,7 @@ namespace bofgltf
             }
             for (Node& node : m_linearNodes)
             {
-                node.destroy();
+                node.destroy(allocator);
             }
         }
 
