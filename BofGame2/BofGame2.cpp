@@ -447,7 +447,10 @@ private:
                 m_device.get(),
                 m_graphicsQueue,
                 m_commandPool,
-                m_allocator);
+                m_allocator,
+                bofgltf::FileLoadingFlags::PreTransformVertices | 
+                bofgltf::FileLoadingFlags::PreMultiplyVertexColors |
+                bofgltf::FileLoadingFlags::FlipY);
 
         }
         {
@@ -1372,7 +1375,7 @@ private:
 
         m_model.destroy(m_allocator);
 
-
+        
         m_allocator.destroy();
         
 
