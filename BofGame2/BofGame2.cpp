@@ -441,7 +441,7 @@ private:
             String filename = "Data/DataFromVulkanExamples/models/treasure_smooth.gltf";
             //String filename = "Data/DataFromVulkanExamples/models/oaktree.gltf";
             //String filename = "Data/DataFromVulkanExamples/models/deer.gltf";
-
+            
             m_model.loadFromFile(
                 filename,
                 m_device.get(),
@@ -1357,6 +1357,9 @@ private:
         m_vertexBuffer = nullptr;
         m_vertexBufferAllocation = nullptr;
 
+        m_model.destroy();
+
+        
 
         for (size_t i = 0; i < m_maxFramesInFlight; i++)
         {
@@ -1373,9 +1376,6 @@ private:
         m_instance->destroySurfaceKHR(m_surface); m_surface = nullptr;
 
 
-        m_model.destroy(m_allocator);
-
-        
         m_allocator.destroy();
         
 

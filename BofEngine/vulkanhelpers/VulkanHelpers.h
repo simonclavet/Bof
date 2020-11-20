@@ -24,38 +24,6 @@ VALUE checkVkResult(const vk::ResultValue<VALUE>& resultValue)
     return resultValue.value;
 }
 
-struct Buffer
-{
-    vma::Allocator* m_allocator = nullptr;
-
-    vk::Buffer m_buffer = nullptr;
-    vma::Allocation m_allocation = nullptr;
-
-
-    static Buffer create(
-        const vk::BufferCreateInfo& bufferCreateInfo,
-        const vma::AllocationCreateInfo& allocationCreateInfo,
-        vma::Allocator* allocator)
-    {        
-        Buffer buffer;
-        buffer.m_allocator = allocator;
-
-        allocator->createBuffer(&bufferCreateInfo, &allocationCreateInfo, &buffer.m_buffer, &buffer.m_allocation, nullptr);
-    }
-
-
-    void destroy()
-    {
-        if (m_allocator && m_buffer && m_allocation)
-        {
-            m_allocator->destroyBuffer(m_buffer, m_allocation);
-            m_allocator = nullptr;
-            m_buffer = nullptr;
-            m_allocation = nullptr;
-        }
-    }
-};
-
 
 class VulkanHelpers
 {
@@ -834,6 +802,7 @@ public:
 
 
 
+
     static void createAndFillBuffer(
         const void* sourceData, // if nullptr don't copy data
         VkDeviceSize bufferSize,
@@ -961,6 +930,105 @@ public:
 };
 
 
+
+
+
+
+struct Buffer
+{
+    vma::Allocator m_allocator = nullptr;
+
+    vk::Buffer m_buffer = nullptr;
+    vma::Allocation m_allocation = nullptr;
+
+    void* m_mappedMemory = nullptr;
+
+    static Buffer create(
+        const vk::BufferCreateInfo& bufferCreateInfo,
+        const vma::AllocationCreateInfo& allocationCreateInfo,
+        vma::Allocator& allocator)
+    {
+        Buffer buffer;
+        buffer.m_allocator = allocator;
+
+        allocator.createBuffer(&bufferCreateInfo, &allocationCreateInfo, &buffer.m_buffer, &buffer.m_allocation, nullptr);
+    }
+
+    static Buffer createAndMapData(
+        const vk::BufferCreateInfo& bufferCreateInfo,
+        const vma::AllocationCreateInfo& allocationCreateInfo,
+        vma::Allocator& allocator)
+    {
+        Buffer buffer = create(bufferCreateInfo, allocationCreateInfo, allocator);
+
+        if (allocationCreateInfo.usage == vma::MemoryUsage::eCpuOnly ||
+            allocationCreateInfo.usage == vma::MemoryUsage::eCpuToGpu)
+        {
+            buffer.m_mappedMemory = checkVkResult(allocator.mapMemory(buffer.m_allocation));
+        }
+
+    }
+
+    static Buffer createFillBufferAndMapData(
+        const void* sourceData, // if nullptr don't copy data
+        VkDeviceSize bufferSize,
+        vk::BufferUsageFlagBits bufferUsageBits,
+        vma::MemoryUsage memoryUsage,
+        const vk::Device& device,
+        const vk::Queue& queue,
+        const vk::CommandPool& commandPool,
+        vma::Allocator& allocator)
+    {
+        Buffer buffer;
+        buffer.m_allocator = allocator;
+
+        VulkanHelpers::createAndFillBuffer(
+            sourceData,
+            bufferSize,
+            bufferUsageBits,
+            memoryUsage,
+            device,
+            queue,
+            commandPool,
+            allocator,
+            // output
+            buffer.m_buffer,
+            buffer.m_allocation);
+
+        if (memoryUsage == vma::MemoryUsage::eCpuOnly ||
+            memoryUsage == vma::MemoryUsage::eCpuToGpu)
+        {
+            buffer.m_mappedMemory = checkVkResult(allocator.mapMemory(buffer.m_allocation));
+        }
+
+        return buffer;
+    }
+
+
+
+    void destroy()
+    {
+        if (m_allocator &&
+            m_mappedMemory != nullptr)
+        {
+            m_allocator.unmapMemory(m_allocation);
+            m_mappedMemory = nullptr;
+        }
+
+        if (m_buffer && 
+            m_allocation && 
+            m_allocator)
+        {
+            m_allocator.destroyBuffer(m_buffer, m_allocation);
+            m_buffer = nullptr;
+            m_allocation = nullptr;
+        }
+    }
+};
+
+
+
+
 //
 //class VulkanDevice
 //{
@@ -992,6 +1060,7 @@ public:
 
 namespace bofgltf
 {
+
     enum FileLoadingFlags
     {
         None = 0x00000000,
@@ -1222,14 +1291,8 @@ namespace bofgltf
 
     struct Mesh
     {
-        struct UniformBuffer
-        {
-            vk::Buffer m_buffer;
-            vma::Allocation m_allocation;
-            vk::DescriptorBufferInfo m_descriptor{};
-            vk::DescriptorSet m_descriptorSet = nullptr;
-            void* m_mappedMemory = nullptr;
-        };
+        vk::DescriptorBufferInfo m_uniformDescriptor{};
+        vk::DescriptorSet m_uniformDescriptorSet = nullptr;
 
         struct UniformBlock
         {
@@ -1238,11 +1301,8 @@ namespace bofgltf
             float m_jointCount{ 0 };
         };
 
+        Buffer m_uniformBuffer;
 
-        //vk::Device m_device = nullptr;
-        //vma::Allocator m_allocator = nullptr;
-
-        UniformBuffer m_uniformBuffer{};
         UniformBlock m_uniformBlock{};
 
 
@@ -1258,11 +1318,9 @@ namespace bofgltf
             vma::Allocator allocator,
             glm::mat4 matrix)
         {
-            //m_device = device;
-            //m_allocator = allocator;
             m_uniformBlock.m_matrix = matrix;
 
-            VulkanHelpers::createAndFillBuffer(
+            m_uniformBuffer = Buffer::createFillBufferAndMapData(
                 &m_uniformBlock,
                 sizeof(m_uniformBlock),
                 vk::BufferUsageFlagBits::eUniformBuffer,
@@ -1270,25 +1328,18 @@ namespace bofgltf
                 device,
                 queue,
                 commandPool,
-                allocator,
-                m_uniformBuffer.m_buffer,
-                m_uniformBuffer.m_allocation);
+                allocator);
 
-            m_uniformBuffer.m_mappedMemory = checkVkResult(allocator.mapMemory(m_uniformBuffer.m_allocation));
-
-            m_uniformBuffer.m_descriptor = vk::DescriptorBufferInfo{};
-            m_uniformBuffer.m_descriptor.buffer = m_uniformBuffer.m_buffer;
-            m_uniformBuffer.m_descriptor.offset = 0;
-            m_uniformBuffer.m_descriptor.range = sizeof(m_uniformBlock);
+            m_uniformDescriptor = vk::DescriptorBufferInfo{}
+                .setBuffer(m_uniformBuffer.m_buffer)
+                .setOffset(0)
+                .setRange(sizeof(m_uniformBlock));
 
         }
 
-        void destroy(vma::Allocator allocator)
+        void destroy()
         {
-            allocator.unmapMemory(m_uniformBuffer.m_allocation);
-            allocator.destroyBuffer(m_uniformBuffer.m_buffer, m_uniformBuffer.m_allocation);
-            m_uniformBuffer.m_buffer = nullptr;
-            m_uniformBuffer.m_allocation = nullptr;
+            m_uniformBuffer.destroy();
         }
     };
 
@@ -1318,9 +1369,9 @@ namespace bofgltf
 
         void update(){}
 
-        void destroy(vma::Allocator allocator)
+        void destroy()
         {
-            m_mesh.destroy(allocator);
+            m_mesh.destroy();
         }
     };
 
@@ -1423,6 +1474,8 @@ namespace bofgltf
 
     struct Model
     {
+        vk::Device m_device;
+
         Vector<Texture> m_textures;
         Vector<Material> m_materials;
 
@@ -1442,7 +1495,15 @@ namespace bofgltf
 
         AABB m_dimensions;
 
-        vk::UniqueDescriptorPool m_descriptorPool;
+        vk::DescriptorPool m_descriptorPool;
+
+        // ?
+        vk::DescriptorSetLayout m_descriptorSetLayoutImage = nullptr;
+        vk::DescriptorSetLayout m_descriptorSetLayoutUbo = nullptr;
+        vk::MemoryPropertyFlags m_memoryPropertyFlags{};
+        uint32_t m_descriptorBindingFlags = bofgltf::DescriptorBindingFlags::ImageBaseColor;
+
+
 
         void loadFromFile(
             String filename,
@@ -1455,6 +1516,8 @@ namespace bofgltf
         {
             UNUSED(scale);
             PROFILE(ModelLoadFromFile);
+
+            m_device = device;
 
             tinygltf::Model gltfModel;
             tinygltf::TinyGLTF gltfContext;
@@ -1723,8 +1786,8 @@ namespace bofgltf
             m_indexCount = static_cast<uint32_t>(indexBuffer.size());
             m_vertexCount = static_cast<uint32_t>(vertexBuffer.size());
 
-            m_vertices.m_allocator = &allocator;
-            m_indices.m_allocator = &allocator;
+            m_vertices.m_allocator = allocator;
+            m_indices.m_allocator = allocator;
 
             BOF_ASSERT((vertexBufferMemorySize > 0) && (indexBufferMemorySize > 0));
 
@@ -1777,24 +1840,44 @@ namespace bofgltf
                 { vk::DescriptorType::eUniformBuffer, uboCount}
             };
 
-            uint32_t descriptorBindingFlags = DescriptorBindingFlags::ImageBaseColor; // ?
 
             if (imageCount > 0)
             {
-                if (descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor)
+                if (m_descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor)
                 {
                     poolSizes.push_back({ vk::DescriptorType::eCombinedImageSampler, imageCount });
                 }
-                if (descriptorBindingFlags & DescriptorBindingFlags::ImageNormalMap)
+                if (m_descriptorBindingFlags & DescriptorBindingFlags::ImageNormalMap)
                 {
                     poolSizes.push_back({ vk::DescriptorType::eCombinedImageSampler, imageCount });
                 }
             }
 
-            m_descriptorPool = device.createDescriptorPoolUnique(vk::DescriptorPoolCreateInfo{}
+            m_descriptorPool = checkVkResult(device.createDescriptorPool(vk::DescriptorPoolCreateInfo{}
                 .setPoolSizes(poolSizes)
-                .setMaxSets(uboCount + imageCount)
+                .setMaxSets(uboCount + imageCount))
             );
+
+            {
+                Vector<vk::DescriptorSetLayoutBinding> setLayoutBindings;
+                    
+                setLayoutBindings.emplace_back(vk::DescriptorSetLayoutBinding{})
+                    .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                    .setStageFlags(vk::ShaderStageFlagBits::eVertex)
+                    .setBinding(0)
+                    .setDescriptorCount(1);
+
+                m_descriptorSetLayoutUbo = checkVkResult(device.createDescriptorSetLayout(
+                    vk::DescriptorSetLayoutCreateInfo{}.setBindings(setLayoutBindings)));
+
+                for (int nodeIndex : m_sceneNodeIndices)
+                {
+                    prepareNodeDescriptor(nodeIndex);
+                }
+            }
+
+
+
 
         }
 
@@ -2094,20 +2177,6 @@ namespace bofgltf
         }
 
 
-        void destroy(vma::Allocator& allocator)
-        {
-            for (Texture& texture : m_textures)
-            {
-                texture.destroy();
-            }
-            for (Node& node : m_linearNodes)
-            {
-                node.destroy(allocator);
-            }
-
-            m_vertices.destroy();
-            m_indices.destroy();
-        }
 
 
         static glm::mat4 getNodeLocalMatrix(const Node& node) 
@@ -2192,6 +2261,55 @@ namespace bofgltf
             {
                 updateNode(childIndex);
             }
+        }
+
+        void prepareNodeDescriptor(int nodeIndex)
+        {
+            Node& node = m_linearNodes[nodeIndex];
+            if (node.m_mesh.hasPrimitives())
+            {
+                auto descriptorSetAllocateInfo = vk::DescriptorSetAllocateInfo{}
+                    .setDescriptorPool(m_descriptorPool)
+                    .setSetLayouts(m_descriptorSetLayoutUbo)
+                    .setDescriptorSetCount(1);
+
+                Vector<vk::DescriptorSet> descriptorSets = checkVkResult(m_device.allocateDescriptorSets(descriptorSetAllocateInfo));
+                node.m_mesh.m_uniformDescriptorSet = descriptorSets[0];
+            
+                Vector<vk::WriteDescriptorSet> writeDescriptorSets;
+                writeDescriptorSets.emplace_back(vk::WriteDescriptorSet{})
+                    .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                    .setDescriptorCount(1)
+                    .setDstSet(node.m_mesh.m_uniformDescriptorSet)
+                    .setDstBinding(0)
+                    .setBufferInfo(node.m_mesh.m_uniformDescriptor);
+
+                m_device.updateDescriptorSets(writeDescriptorSets, nullptr);
+            }
+
+            for (int childIndex : node.m_childrenNodeIndices)
+            {
+                prepareNodeDescriptor(childIndex);
+            }
+        }
+
+
+        void destroy()
+        {
+            for (Texture& texture : m_textures)
+            {
+                texture.destroy();
+            }
+            for (Node& node : m_linearNodes)
+            {
+                node.destroy();
+            }
+
+            m_vertices.destroy();
+            m_indices.destroy();
+
+            m_device.destroyDescriptorPool(m_descriptorPool);
+            m_device.destroyDescriptorSetLayout(m_descriptorSetLayoutUbo);
         }
 
     };
