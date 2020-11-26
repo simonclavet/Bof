@@ -1,0 +1,1 @@
+call python compileshaders.py

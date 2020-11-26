@@ -765,8 +765,8 @@ private:
 
             vk::GraphicsPipelineCreateInfo pipelineInfo{};
 
-            Vector<char> vertShaderCode = VulkanHelpers::readFile("Data/BuiltShaders/simpleTextured.vert.spv");
-            Vector<char> fragShaderCode = VulkanHelpers::readFile("Data/BuiltShaders/simpleTextured.frag.spv");
+            Vector<char> vertShaderCode = VulkanHelpers::readFile("Data/Shaders/simpleTextured.vert.spv");
+            Vector<char> fragShaderCode = VulkanHelpers::readFile("Data/Shaders/simpleTextured.frag.spv");
 
             vk::UniqueShaderModule vertShaderModule = VulkanHelpers::createShaderModule(m_device.get(), vertShaderCode);
             vk::UniqueShaderModule fragShaderModule = VulkanHelpers::createShaderModule(m_device.get(), fragShaderCode);

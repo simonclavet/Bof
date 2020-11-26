@@ -115,10 +115,18 @@ struct UniformBufferObject
 
 
 
-
-
 class BofGame
 {
+
+    struct UBOVS
+    {
+        alignas(16) glm::mat4 m_projection;
+        alignas(16) glm::mat4 m_modelView;
+        alignas(16) glm::vec4 m_lightPos = glm::vec4(0.0f, 2.0f, 1.0f, 0.0f);
+    };
+
+
+
 public:
     void run()
     {
@@ -434,6 +442,9 @@ private:
                 }
             }
         }
+
+
+
         {
             PROFILE(loadGltfModel);
 
@@ -453,6 +464,22 @@ private:
                 bofgltf::FileLoadingFlags::FlipY);
 
         }
+        {
+            PROFILE(prepareUniformBuffers);
+
+            m_uniformBuffer = Buffer::create(
+                vk::BufferUsageFlagBits::eUniformBuffer,
+                vma::MemoryUsage::eCpuToGpu,
+                m_allocator,
+                nullptr,
+                sizeof(m_uboVS));
+
+            m_uniformBuffer.mapMemory();
+
+        }
+
+
+
         {
             PROFILE(createVertexBuffer);
             BOF_ASSERT(!m_vertices.empty());
@@ -491,40 +518,68 @@ private:
                 m_indexBuffer,
                 m_indexBufferAllocation);
         }
+        //{
+        //    PROFILE(createDescriptorSetLayout);
+
+        //    Vector<vk::DescriptorSetLayoutBinding> layoutBindings;
+
+        //    auto& uboLayoutBinding = layoutBindings.emplace_back(vk::DescriptorSetLayoutBinding{});
+        //    uboLayoutBinding.binding = 0;
+        //    uboLayoutBinding.descriptorType = vk::DescriptorType::eUniformBuffer;
+        //    uboLayoutBinding.descriptorCount = 1;
+        //    uboLayoutBinding.stageFlags = vk::ShaderStageFlagBits::eVertex;
+        //    uboLayoutBinding.pImmutableSamplers = nullptr;
+
+        //    auto& samplerLayoutBinding = layoutBindings.emplace_back(vk::DescriptorSetLayoutBinding{});
+        //    samplerLayoutBinding.binding = 1;
+        //    samplerLayoutBinding.descriptorType = vk::DescriptorType::eCombinedImageSampler;
+        //    samplerLayoutBinding.descriptorCount = 1;
+        //    samplerLayoutBinding.stageFlags = vk::ShaderStageFlagBits::eFragment;
+        //    samplerLayoutBinding.pImmutableSamplers = nullptr;
+
+        //    vk::DescriptorSetLayoutCreateInfo layoutInfo = {};
+        //    layoutInfo.setBindings(layoutBindings);
+
+        //    m_descriptorSetLayout = checkVkResult(m_device->createDescriptorSetLayout(layoutInfo));
+        //}
+
         {
             PROFILE(createDescriptorSetLayout);
 
-            Vector<vk::DescriptorSetLayoutBinding> layoutBindings;
+            Vector<vk::DescriptorSetLayoutBinding> descriptorSetLayoutBindings;
 
-            auto& uboLayoutBinding = layoutBindings.emplace_back(vk::DescriptorSetLayoutBinding{});
-            uboLayoutBinding.binding = 0;
-            uboLayoutBinding.descriptorType = vk::DescriptorType::eUniformBuffer;
-            uboLayoutBinding.descriptorCount = 1;
-            uboLayoutBinding.stageFlags = vk::ShaderStageFlagBits::eVertex;
-            uboLayoutBinding.pImmutableSamplers = nullptr;
+            descriptorSetLayoutBindings.emplace_back(vk::DescriptorSetLayoutBinding{})
+                .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+                .setStageFlags(vk::ShaderStageFlagBits::eVertex)
+                .setBinding(0)
+                .setDescriptorCount(1);
+            
+            descriptorSetLayoutBindings.emplace_back(vk::DescriptorSetLayoutBinding{})
+                .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+                .setStageFlags(vk::ShaderStageFlagBits::eFragment)
+                .setBinding(1)
+                .setDescriptorCount(1);
 
-            auto& samplerLayoutBinding = layoutBindings.emplace_back(vk::DescriptorSetLayoutBinding{});
-            samplerLayoutBinding.binding = 1;
-            samplerLayoutBinding.descriptorType = vk::DescriptorType::eCombinedImageSampler;
-            samplerLayoutBinding.descriptorCount = 1;
-            samplerLayoutBinding.stageFlags = vk::ShaderStageFlagBits::eFragment;
-            samplerLayoutBinding.pImmutableSamplers = nullptr;
-
-            vk::DescriptorSetLayoutCreateInfo layoutInfo = {};
-            layoutInfo.setBindings(layoutBindings);
-
-            m_descriptorSetLayout = checkVkResult(m_device->createDescriptorSetLayout(layoutInfo));
+            m_descriptorSetLayout = checkVkResult(m_device->createDescriptorSetLayout(
+                vk::DescriptorSetLayoutCreateInfo{}.setBindings(descriptorSetLayoutBindings)));
         }
 
+        {
+            PROFILE(createPipelineLayout);
 
+            vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
 
+            Vector<vk::DescriptorSetLayout> descriptorSetLayouts;
+            descriptorSetLayouts.push_back(m_descriptorSetLayout);
 
+            pipelineLayoutInfo.setSetLayouts(m_descriptorSetLayout);
+            
+            Vector<vk::PushConstantRange> pushConstantRanges;
+            pipelineLayoutInfo.setPushConstantRanges(Vector<vk::PushConstantRange>());
 
+            m_pipelineLayout = checkVkResult(m_device->createPipelineLayout(pipelineLayoutInfo));
 
-
-
-
-
+        }
 
 
         {
@@ -581,6 +636,7 @@ private:
     void createSwapchainAndRelatedThings()
     {
         PROFILE(createSwapchainAndRelatedThings);
+
         {
             PROFILE(createSwapchain);
             BOF_ASSERT(!m_swapchain && m_swapchainImages.empty());
@@ -787,47 +843,47 @@ private:
 
             m_renderPass = checkVkResult(m_device->createRenderPass(renderPassInfo));
         }
+        //{
+        //    PROFILE(createGraphicsPipeline);
+
+        //    vk::PipelineInputAssemblyStateCreateInfo
+
+        //}
+
 
         {
             PROFILE(createGraphicsPipeline);
-            BOF_ASSERT(!m_pipelineLayout);
-            BOF_ASSERT(!m_graphicsPipeline);
+
+            BOF_ASSERT(!m_phongPipeline);
+
+            BOF_ASSERT(m_pipelineLayout);
+
             BOF_ASSERT(m_renderPass);
             BOF_ASSERT(m_descriptorSetLayout);
 
             vk::GraphicsPipelineCreateInfo pipelineInfo{};
 
-            Vector<char> vertShaderCode = VulkanHelpers::readFile("Data/BuiltShaders/simpleTextured.vert.spv");
-            Vector<char> fragShaderCode = VulkanHelpers::readFile("Data/BuiltShaders/simpleTextured.frag.spv");
-
-            vk::UniqueShaderModule vertShaderModule = VulkanHelpers::createShaderModule(m_device.get(), vertShaderCode);
-            vk::UniqueShaderModule fragShaderModule = VulkanHelpers::createShaderModule(m_device.get(), fragShaderCode);
-
-            Vector<vk::PipelineShaderStageCreateInfo> shaderStages;
-            {
-                auto& shaderStage = shaderStages.emplace_back(vk::PipelineShaderStageCreateInfo{});
-                shaderStage.stage = vk::ShaderStageFlagBits::eVertex;
-                shaderStage.module = *vertShaderModule;
-                shaderStage.pName = "main";
-            }
-            {
-                auto& shaderStage = shaderStages.emplace_back(vk::PipelineShaderStageCreateInfo{});
-                shaderStage.stage = vk::ShaderStageFlagBits::eFragment;
-                shaderStage.module = *fragShaderModule;
-                shaderStage.pName = "main";
-            }
-            pipelineInfo.setStages(shaderStages);
 
 
-            vk::PipelineVertexInputStateCreateInfo vertexInputInfo = {};
 
-            Vector<vk::VertexInputBindingDescription> bindingDescriptions = { Vertex::getBindingDescription() };
-            vertexInputInfo.setVertexBindingDescriptions(bindingDescriptions);
+            //vk::PipelineVertexInputStateCreateInfo vertexInputInfo = {};
 
-            Vector<vk::VertexInputAttributeDescription> attributeDescriptions = Vertex::getAttributeDescriptions();
-            vertexInputInfo.setVertexAttributeDescriptions(attributeDescriptions);
+            //Vector<vk::VertexInputBindingDescription> bindingDescriptions = { Vertex::getBindingDescription() };
+            //vertexInputInfo.setVertexBindingDescriptions(bindingDescriptions);
 
-            pipelineInfo.pVertexInputState = &vertexInputInfo;
+            //Vector<vk::VertexInputAttributeDescription> attributeDescriptions = Vertex::getAttributeDescriptions();
+            //vertexInputInfo.setVertexAttributeDescriptions(attributeDescriptions);
+
+            //pipelineInfo.pVertexInputState = &vertexInputInfo;
+
+            pipelineInfo.pVertexInputState = bofgltf::Vertex::getPipelineVertexInputState(
+                {
+                    bofgltf::VertexComponent::Position,
+                    bofgltf::VertexComponent::Normal,
+                    bofgltf::VertexComponent::Color
+                }
+            );
+
 
 
             vk::PipelineInputAssemblyStateCreateInfo inputAssembly = {};
@@ -911,17 +967,28 @@ private:
 
             pipelineInfo.pColorBlendState = &colorBlending;
 
-            pipelineInfo.pDynamicState = nullptr;
+
+            Vector<vk::DynamicState> dynamicStateEnables =
+            {
+                vk::DynamicState::eViewport,
+                vk::DynamicState::eScissor,
+                vk::DynamicState::eLineWidth
+            };
+
+            vk::PipelineDynamicStateCreateInfo pipelineDynamicStateInfo{};
+            pipelineDynamicStateInfo.setDynamicStates(dynamicStateEnables);
+
+            pipelineInfo.pDynamicState = &pipelineDynamicStateInfo;
 
 
-            vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
+            //vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
 
-            Vector<vk::DescriptorSetLayout> descriptorSetLayouts = { m_descriptorSetLayout };
-            pipelineLayoutInfo.setSetLayouts(descriptorSetLayouts);
+            //Vector<vk::DescriptorSetLayout> descriptorSetLayouts = { m_descriptorSetLayout };
+            //pipelineLayoutInfo.setSetLayouts(descriptorSetLayouts);
 
-            pipelineLayoutInfo.setPushConstantRanges(Vector<vk::PushConstantRange>());
+            //pipelineLayoutInfo.setPushConstantRanges(Vector<vk::PushConstantRange>());
 
-            m_pipelineLayout = checkVkResult(m_device->createPipelineLayout(pipelineLayoutInfo));
+            //m_pipelineLayout = checkVkResult(m_device->createPipelineLayout(pipelineLayoutInfo));
 
             pipelineInfo.layout = m_pipelineLayout;
 
@@ -933,8 +1000,37 @@ private:
             pipelineInfo.basePipelineIndex = -1;
 
 
-            m_graphicsPipeline = checkVkResult(m_device->createGraphicsPipeline(nullptr, pipelineInfo));
+
+
+
+            Vector<char> vertShaderCode = VulkanHelpers::readFile("Data/Shaders/phong.vert.spv");
+            Vector<char> fragShaderCode = VulkanHelpers::readFile("Data/Shaders/phong.frag.spv");
+
+            vk::UniqueShaderModule vertShaderModule = VulkanHelpers::createShaderModule(m_device.get(), vertShaderCode);
+            vk::UniqueShaderModule fragShaderModule = VulkanHelpers::createShaderModule(m_device.get(), fragShaderCode);
+
+            Vector<vk::PipelineShaderStageCreateInfo> shaderStages;
+            {
+                auto& shaderStage = shaderStages.emplace_back(vk::PipelineShaderStageCreateInfo{});
+                shaderStage.stage = vk::ShaderStageFlagBits::eVertex;
+                shaderStage.module = *vertShaderModule;
+                shaderStage.pName = "main";
+            }
+            {
+                auto& shaderStage = shaderStages.emplace_back(vk::PipelineShaderStageCreateInfo{});
+                shaderStage.stage = vk::ShaderStageFlagBits::eFragment;
+                shaderStage.module = *fragShaderModule;
+                shaderStage.pName = "main";
+            }
+            pipelineInfo.setStages(shaderStages);
+
+
+            m_phongPipeline = checkVkResult(m_device->createGraphicsPipeline(nullptr, pipelineInfo));
+
+            //m_graphicsPipeline = checkVkResult(m_device->createGraphicsPipeline(nullptr, pipelineInfo));
         }
+
+
         {
             PROFILE(createColorResources);
 
@@ -1021,12 +1117,12 @@ private:
 
         {
             PROFILE(createUniformBuffers);
-            BOF_ASSERT(m_uniformBuffers.empty());
+            BOF_ASSERT(m_uniformBuffersOld.empty());
             BOF_ASSERT(m_uniformBuffersAllocations.empty());
 
             const vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
 
-            m_uniformBuffers.resize(m_swapchainImageCount);
+            m_uniformBuffersOld.resize(m_swapchainImageCount);
             m_uniformBuffersAllocations.resize(m_swapchainImageCount);
             
             for (size_t i = 0; i < m_swapchainImageCount; i++)
@@ -1040,7 +1136,7 @@ private:
 
                 m_allocator.createBuffer(
                     &bufferInfo, &allocInfo,
-                    &m_uniformBuffers[i], &m_uniformBuffersAllocations[i],
+                    &m_uniformBuffersOld[i], &m_uniformBuffersAllocations[i],
                     nullptr);
             }
         }
@@ -1050,22 +1146,19 @@ private:
             BOF_ASSERT(!m_descriptorPool);
 
             Vector<vk::DescriptorPoolSize> poolSizes;
-            {
-                auto& uniformBufferPoolSize = poolSizes.emplace_back(vk::DescriptorPoolSize{});
-                uniformBufferPoolSize.type = vk::DescriptorType::eUniformBuffer;
-                uniformBufferPoolSize.descriptorCount = m_swapchainImageCount;
-            }
-            {
-                auto& samplerPoolSize = poolSizes.emplace_back(vk::DescriptorPoolSize{});
-                samplerPoolSize.type = vk::DescriptorType::eCombinedImageSampler;
-                samplerPoolSize.descriptorCount = m_swapchainImageCount;
-            }
+            
+            poolSizes.emplace_back(vk::DescriptorPoolSize{})
+                .setType(vk::DescriptorType::eUniformBuffer)
+                .setDescriptorCount(m_swapchainImageCount);
 
-            vk::DescriptorPoolCreateInfo poolInfo{};
-            poolInfo.setPoolSizes(poolSizes);
-            poolInfo.maxSets = m_swapchainImageCount;
-
-            m_descriptorPool = checkVkResult(m_device->createDescriptorPool(poolInfo));
+            poolSizes.emplace_back(vk::DescriptorPoolSize{})
+                .setType(vk::DescriptorType::eCombinedImageSampler)
+                .setDescriptorCount(m_swapchainImageCount);
+           
+            m_descriptorPool = checkVkResult(m_device->createDescriptorPool(
+                vk::DescriptorPoolCreateInfo{}
+                .setPoolSizes(poolSizes)
+                .setMaxSets(m_swapchainImageCount)));
         }
 
         {
@@ -1089,24 +1182,30 @@ private:
             {
                 Vector<vk::WriteDescriptorSet> descriptorWrites;
 
+                // binding 0: vertex shader uniform buffer
                 auto& bufferDescriptorWrite = descriptorWrites.emplace_back(vk::WriteDescriptorSet{});
                 bufferDescriptorWrite.dstSet = m_descriptorSets[i];
-                bufferDescriptorWrite.dstBinding = static_cast<uint32_t>(descriptorWrites.size() - 1);
+                bufferDescriptorWrite.dstBinding = 0;
                 bufferDescriptorWrite.dstArrayElement = 0;
                 bufferDescriptorWrite.descriptorType = vk::DescriptorType::eUniformBuffer;
 
-                vk::DescriptorBufferInfo bufferInfo{};
-                bufferInfo.buffer = m_uniformBuffers[i];
-                bufferInfo.offset = 0;
-                bufferInfo.range = sizeof(UniformBufferObject);
+                //vk::DescriptorBufferInfo bufferInfo{};
+                //bufferInfo.buffer = m_uniformBuffersOld[i];
+                //bufferInfo.offset = 0;
+                //bufferInfo.range = sizeof(UniformBufferObject);
 
-                Vector<vk::DescriptorBufferInfo> bufferInfos = { bufferInfo };
-                bufferDescriptorWrite.setBufferInfo(bufferInfos);
+                vk::DescriptorBufferInfo bufferInfo{};
+                bufferInfo.buffer = m_uniformBuffer.m_buffer;
+                bufferInfo.offset = 0;
+                bufferInfo.range = sizeof(UBOVS);
+
+
+                bufferDescriptorWrite.setBufferInfo(bufferInfo);
 
 
                 auto& samplerDescriptorWrite = descriptorWrites.emplace_back(vk::WriteDescriptorSet{});
                 samplerDescriptorWrite.dstSet = m_descriptorSets[i];
-                samplerDescriptorWrite.dstBinding = static_cast<uint32_t>(descriptorWrites.size() - 1);
+                samplerDescriptorWrite.dstBinding = 1;
                 samplerDescriptorWrite.dstArrayElement = 0;
                 samplerDescriptorWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
 
@@ -1115,8 +1214,7 @@ private:
                 imageInfo.imageView = m_textureImageView;
                 imageInfo.sampler = m_textureSampler;
 
-                Vector<vk::DescriptorImageInfo> imageInfos = { imageInfo };
-                samplerDescriptorWrite.setImageInfo(imageInfos);
+                samplerDescriptorWrite.setImageInfo(imageInfo);
 
                 m_device->updateDescriptorSets(descriptorWrites, nullptr);
             }
@@ -1124,10 +1222,12 @@ private:
 
         {
             PROFILE(createCommandBuffers);
+
             BOF_ASSERT(m_commandBuffers.empty());
             BOF_ASSERT(m_commandPool);
             BOF_ASSERT(m_renderPass);
-            BOF_ASSERT(m_graphicsPipeline);
+            //BOF_ASSERT(m_graphicsPipeline);
+            BOF_ASSERT(m_phongPipeline);
             BOF_ASSERT(m_pipelineLayout);
             BOF_ASSERT(m_vertexBuffer);
             BOF_ASSERT(m_indexBuffer);
@@ -1142,58 +1242,133 @@ private:
 
             m_commandBuffers = checkVkResult(m_device->allocateCommandBuffers(allocInfo));
 
+
+            std::array<vk::ClearValue, m_attachmentCount> clearValues{};
+
+            clearValues[m_colorImageAttachmentIndex].color =
+                std::array<float, 4>{ 0.0f, 0.0f, 0.0f, 1.0f };
+
+            clearValues[m_depthImageAttachmentIndex].depthStencil =
+                vk::ClearDepthStencilValue{ 1.0f, 0 };
+
+            auto renderPassInfo = vk::RenderPassBeginInfo{}
+                .setRenderPass(m_renderPass)
+                .setRenderArea(vk::Rect2D{}
+                    .setOffset(vk::Offset2D{ 0, 0 })
+                    .setExtent(m_swapchainExtent))
+                .setClearValues(clearValues);
+
+
             for (size_t i = 0; i < m_commandBuffers.size(); i++)
             {
                 vk::CommandBuffer& commandBuffer = m_commandBuffers[i];
+                
+                CHECK_VKRESULT(commandBuffer.begin(
+                    vk::CommandBufferBeginInfo{}
+                    .setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse)));
 
-                vk::CommandBufferBeginInfo beginInfo = {};
-                beginInfo.flags = vk::CommandBufferUsageFlagBits::eSimultaneousUse;
-                beginInfo.pInheritanceInfo = nullptr;
-
-                CHECK_VKRESULT(commandBuffer.begin(beginInfo));
-
-                vk::RenderPassBeginInfo renderPassInfo = {};
-                renderPassInfo.renderPass = m_renderPass;
                 renderPassInfo.framebuffer = m_swapchainFramebuffers[i];
-                renderPassInfo.renderArea.offset = vk::Offset2D{ 0, 0 };
-                renderPassInfo.renderArea.extent = m_swapchainExtent;
-
-                std::array<vk::ClearValue, m_attachmentCount> clearValues{};
-
-                clearValues[m_colorImageAttachmentIndex].color =
-                    std::array<float, 4>{ 0.0f, 0.0f, 0.0f, 1.0f };
-
-                clearValues[m_depthImageAttachmentIndex].depthStencil =
-                    vk::ClearDepthStencilValue{ 1.0f, 0 };
-
-
-                renderPassInfo.setClearValues(clearValues);
-
+ 
                 commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 
-                commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_graphicsPipeline);
+                const auto viewport = vk::Viewport{}
+                    .setX(0.0f)
+                    .setY(0.0f)
+                    .setWidth((float)m_width)
+                    .setHeight((float)m_height)
+                    .setMinDepth(0.0f)
+                    .setMaxDepth(1.0f);
 
-                Vector<vk::Buffer> vertexBuffers = { m_vertexBuffer };
+                const uint32_t firstViewport = 0;
+                const Vector<vk::Viewport> viewports = { viewport };
+                commandBuffer.setViewport(firstViewport, viewports);
+
+                const auto scissor = vk::Rect2D{}
+                    .setOffset(vk::Offset2D{ 0, 0 })
+                    .setExtent(m_swapchainExtent);
+
+                const uint32_t firstScissor = 0;
+                const Vector<vk::Rect2D> scissors = { scissor };
+                commandBuffer.setScissor(firstScissor, scissor);
+
+                const uint32_t firstSet = 0;
+                const Vector<vk::DescriptorSet> thisDescriptorSetVector = { m_descriptorSets[i] };
+                const Vector<uint32_t> dynamicOffsets;
+                commandBuffer.bindDescriptorSets(
+                    vk::PipelineBindPoint::eGraphics, 
+                    m_pipelineLayout, 
+                    firstSet, 
+                    thisDescriptorSetVector, 
+                    dynamicOffsets);
+
+                //const vk::DeviceSize offsets[1] = { 0 };
+                //commandBuffer.bindVertexBuffers()
+
+                
+                
+                Vector<vk::Buffer> vertexBuffers = { m_model.m_vertices.m_buffer };
                 Vector<vk::DeviceSize> vertexOffsets = { 0 };
 
                 const uint32_t firstBinding = 0;
                 commandBuffer.bindVertexBuffers(firstBinding, vertexBuffers, vertexOffsets);
 
                 const vk::DeviceSize indexOffset = 0;
-
-                constexpr vk::IndexType indexType = vk::IndexTypeValue<decltype(m_indices)::value_type>::value;
-                commandBuffer.bindIndexBuffer(m_indexBuffer, indexOffset, indexType);
-
-                commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
-                    m_pipelineLayout, 0, m_descriptorSets[i], nullptr);
+                const vk::IndexType indexType = vk::IndexType::eUint32;
+                commandBuffer.bindIndexBuffer(m_model.m_indices.m_buffer, indexOffset, indexType);
 
 
-                const uint32_t indexCount = static_cast<uint32_t>(m_indices.size());
-                const uint32_t instanceCount = 1;
-                const uint32_t firstIndex = 0;
-                const uint32_t vertexOffset = 0;
-                const uint32_t firstInstance = 0;
-                commandBuffer.drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+
+                //commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+                //    m_pipelineLayout, 0, m_descriptorSets[i], nullptr);
+
+
+
+                //commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_graphicsPipeline);
+
+                commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_phongPipeline);
+
+                for (const bofgltf::Node& node : m_model.m_linearNodes)
+                {
+                    for (const bofgltf::Primitive* primitive : node.m_mesh.m_primitives)
+                    {
+                        //bool skip = false;
+
+                        //const bofgltf::Material& material = primitive->m_material;
+
+                        uint32_t instanceCount = 1;
+                        uint32_t vertexOffset = 0;
+                        uint32_t firstInstance = 0;
+                        commandBuffer.drawIndexed(
+                            primitive->m_indexCount,
+                            instanceCount,
+                            primitive->m_firstIndex,
+                            vertexOffset,
+                            firstInstance);
+                    }
+                }
+
+
+                //Vector<vk::Buffer> vertexBuffers = { m_vertexBuffer };
+                //Vector<vk::DeviceSize> vertexOffsets = { 0 };
+
+                //const uint32_t firstBinding = 0;
+                //commandBuffer.bindVertexBuffers(firstBinding, vertexBuffers, vertexOffsets);
+
+                //const vk::DeviceSize indexOffset = 0;
+
+                //constexpr vk::IndexType indexType = vk::IndexTypeValue<decltype(m_indices)::value_type>::value;
+                //commandBuffer.bindIndexBuffer(m_indexBuffer, indexOffset, indexType);
+
+                //commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+                //    m_pipelineLayout, 0, m_descriptorSets[i], nullptr);
+
+
+                //const uint32_t indexCount = static_cast<uint32_t>(m_indices.size());
+                //const uint32_t instanceCount = 1;
+                //const uint32_t firstIndex = 0;
+                //const uint32_t vertexOffset = 0;
+                //const uint32_t firstInstance = 0;
+                //commandBuffer.drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 
 
                 commandBuffer.endRenderPass();
@@ -1359,7 +1534,10 @@ private:
 
         m_model.destroy();
 
-        
+        m_device->destroyPipelineLayout(m_pipelineLayout); m_pipelineLayout = nullptr;
+
+        m_uniformBuffer.destroy();
+
 
         for (size_t i = 0; i < m_maxFramesInFlight; i++)
         {
@@ -1425,18 +1603,19 @@ private:
 
         m_device->freeCommandBuffers(m_commandPool, m_commandBuffers); m_commandBuffers.clear();
 
-        m_device->destroyPipeline(m_graphicsPipeline); m_graphicsPipeline = nullptr;
-        m_device->destroyPipelineLayout(m_pipelineLayout); m_pipelineLayout = nullptr;
+        //m_device->destroyPipeline(m_graphicsPipeline); m_graphicsPipeline = nullptr;
+        m_device->destroyPipeline(m_phongPipeline); m_phongPipeline = nullptr;
         m_device->destroyRenderPass(m_renderPass); m_renderPass = nullptr;
 
         for (size_t i = 0; i < m_swapchainImageCount; i++)
         {
             m_device->destroyImageView(m_swapchainImageViews[i]);
-            m_allocator.destroyBuffer(m_uniformBuffers[i], m_uniformBuffersAllocations[i]);
+            m_allocator.destroyBuffer(m_uniformBuffersOld[i], m_uniformBuffersAllocations[i]);
         }
         m_swapchainImageViews.clear();
-        m_uniformBuffers.clear();
+        m_uniformBuffersOld.clear();
         m_uniformBuffersAllocations.clear();
+
 
         m_device->destroyDescriptorPool(m_descriptorPool); m_descriptorPool = nullptr;
 
@@ -1665,6 +1844,17 @@ private:
         void* data = checkVkResult(m_allocator.mapMemory(m_uniformBuffersAllocations[currentImage]));
         memcpy(data, &ubo, sizeof(ubo));
         m_allocator.unmapMemory(m_uniformBuffersAllocations[currentImage]);
+
+
+
+        // new part
+        m_uboVS.m_projection = m_camera.computePerspectiveMatrix();
+        m_uboVS.m_modelView = m_camera.computeViewMatrix();
+        memcpy(m_uniformBuffer.m_mappedMemory, &m_uboVS, sizeof(m_uboVS));
+
+
+
+
     }
 
     void showFps()
@@ -1765,7 +1955,9 @@ private:
     vk::DescriptorSetLayout m_descriptorSetLayout = nullptr;
     vk::PipelineLayout m_pipelineLayout = nullptr;
 
-    vk::Pipeline m_graphicsPipeline = nullptr;
+    //vk::Pipeline m_graphicsPipeline = nullptr;
+
+    vk::Pipeline m_phongPipeline = nullptr;
 
     Vector<vk::Framebuffer> m_swapchainFramebuffers;
 
@@ -1787,7 +1979,7 @@ private:
     vk::Buffer m_indexBuffer = nullptr;
     vma::Allocation m_indexBufferAllocation = nullptr;
 
-    Vector<vk::Buffer> m_uniformBuffers;
+    Vector<vk::Buffer> m_uniformBuffersOld;
     Vector<vma::Allocation> m_uniformBuffersAllocations;
 
     vk::DescriptorPool m_descriptorPool = nullptr;
@@ -1851,12 +2043,19 @@ private:
     //};
 
 
+
+
+
     const std::string m_modelPath = "data/models/viking_room.obj";
     const std::string m_texturePath = "data/textures/viking_room.png";
 
 
     bofgltf::Model m_model;
+    Buffer m_uniformBuffer;
 
+    UBOVS m_uboVS;
+
+    Camera m_camera;
 };
 
 struct Hoho final : public GoodSerializable
