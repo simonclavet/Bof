@@ -1000,11 +1000,17 @@ private:
             pipelineInfo.basePipelineIndex = -1;
 
 
+            
 
+            String shaderName = "phong";
+            String shaderPath = "Data/Shaders/";
+            String vertShaderPath = shaderPath + shaderName + ".vert.spv";
+            String fragShaderPath = shaderPath + shaderName + ".frag.spv";
+            Vector<char> vertShaderCode = VulkanHelpers::readFile(vertShaderPath);
+            Vector<char> fragShaderCode = VulkanHelpers::readFile(fragShaderPath);
 
-
-            Vector<char> vertShaderCode = VulkanHelpers::readFile("Data/Shaders/phong.vert.spv");
-            Vector<char> fragShaderCode = VulkanHelpers::readFile("Data/Shaders/phong.frag.spv");
+            //Vector<char> vertShaderCode = VulkanHelpers::readFile("Data/Shaders/phong.vert.spv");
+            //Vector<char> fragShaderCode = VulkanHelpers::readFile("Data/Shaders/phong.frag.spv");
 
             vk::UniqueShaderModule vertShaderModule = VulkanHelpers::createShaderModule(m_device.get(), vertShaderCode);
             vk::UniqueShaderModule fragShaderModule = VulkanHelpers::createShaderModule(m_device.get(), fragShaderCode);
@@ -1815,39 +1821,43 @@ private:
 
 
 
-    void updateUniformBuffer(uint32_t currentImage)
+    void updateUniformBuffer(uint32_t /*currentImage*/)
     {
-        const double time = m_clock.GetTimeSecs();
+        //const double time = m_clock.GetTimeSecs();
 
-        UniformBufferObject ubo{};
-        static float radsPerSecond = 0.5f;
-        const double angle = time * radsPerSecond;
-        ubo.model = glm::rotate(
-            glm::mat4(1.0f), (float)angle,
-            glm::vec3(0.0f, 0.0f, 1.0f));
+        //UniformBufferObject ubo{};
+        //static float radsPerSecond = 0.5f;
+        //const double angle = time * radsPerSecond;
+        //ubo.model = glm::rotate(
+        //    glm::mat4(1.0f), (float)angle,
+        //    glm::vec3(0.0f, 0.0f, 1.0f));
 
-        ubo.view = glm::lookAt(
-            glm::vec3(1.5f, 1.5f, 0.8f),
-            glm::vec3(0.0f, 0.0f, 0.2f),
-            glm::vec3(0.0f, 0.0f, 1.0f));
+        //ubo.view = glm::lookAt(
+        //    glm::vec3(1.5f, 1.5f, 0.8f),
+        //    glm::vec3(0.0f, 0.0f, 0.2f),
+        //    glm::vec3(0.0f, 0.0f, 1.0f));
 
-        const float aspectRatio = m_swapchainExtent.width / (float)m_swapchainExtent.height;
+        //const float aspectRatio = m_swapchainExtent.width / (float)m_swapchainExtent.height;
 
-        ubo.proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
-        ubo.proj[1][1] *= -1;
+        //ubo.proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
+        //ubo.proj[1][1] *= -1;
 
-        //const vk::DeviceSize memoryOffset = 0;
-        //void* data = m_device->mapMemory(m_uniformBuffersMemory[currentImage], memoryOffset, sizeof(ubo), vk::MemoryMapFlags{});
+        ////const vk::DeviceSize memoryOffset = 0;
+        ////void* data = m_device->mapMemory(m_uniformBuffersMemory[currentImage], memoryOffset, sizeof(ubo), vk::MemoryMapFlags{});
+        ////memcpy(data, &ubo, sizeof(ubo));
+        ////m_device->unmapMemory(m_uniformBuffersMemory[currentImage]);
+
+        //void* data = checkVkResult(m_allocator.mapMemory(m_uniformBuffersAllocations[currentImage]));
         //memcpy(data, &ubo, sizeof(ubo));
-        //m_device->unmapMemory(m_uniformBuffersMemory[currentImage]);
-
-        void* data = checkVkResult(m_allocator.mapMemory(m_uniformBuffersAllocations[currentImage]));
-        memcpy(data, &ubo, sizeof(ubo));
-        m_allocator.unmapMemory(m_uniformBuffersAllocations[currentImage]);
+        //m_allocator.unmapMemory(m_uniformBuffersAllocations[currentImage]);
 
 
 
         // new part
+        m_camera.m_position = glm::vec3(0.0f, 0.0f, -10.5f);
+        m_camera.m_rotation = glm::vec3(-1.0f, 0.1f, 0.0f);
+        m_camera.m_aspect = m_width /(float) m_height;
+
         m_uboVS.m_projection = m_camera.computePerspectiveMatrix();
         m_uboVS.m_modelView = m_camera.computeViewMatrix();
         memcpy(m_uniformBuffer.m_mappedMemory, &m_uboVS, sizeof(m_uboVS));

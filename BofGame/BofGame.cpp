@@ -765,8 +765,12 @@ private:
 
             vk::GraphicsPipelineCreateInfo pipelineInfo{};
 
-            Vector<char> vertShaderCode = VulkanHelpers::readFile("Data/Shaders/simpleTextured.vert.spv");
-            Vector<char> fragShaderCode = VulkanHelpers::readFile("Data/Shaders/simpleTextured.frag.spv");
+            String shaderName = "simpleTextured";
+            String shaderPath = "Data/Shaders/";
+            String vertShaderPath = shaderPath + shaderName + ".vert.spv";
+            String fragShaderPath = shaderPath + shaderName + ".frag.spv";
+            Vector<char> vertShaderCode = VulkanHelpers::readFile(vertShaderPath);
+            Vector<char> fragShaderCode = VulkanHelpers::readFile(fragShaderPath);
 
             vk::UniqueShaderModule vertShaderModule = VulkanHelpers::createShaderModule(m_device.get(), vertShaderCode);
             vk::UniqueShaderModule fragShaderModule = VulkanHelpers::createShaderModule(m_device.get(), fragShaderCode);
