@@ -199,7 +199,7 @@ private:
                 debugUtilsInfo.pfnUserCallback = debugCallback;
 
                 if (VulkanHelpers::createDebugUtilsMessengerEXT(
-                    m_instance,
+                    m_instance.get(),
                     reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT*>(&debugUtilsInfo),
                     nullptr, &m_debugCallback) != VK_SUCCESS)
                 {
@@ -2065,7 +2065,7 @@ private:
 
     UBOVS m_uboVS;
 
-    Camera m_camera;
+    BF_Camera m_camera;
 };
 
 struct Hoho final : public GoodSerializable

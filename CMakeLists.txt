@@ -26,6 +26,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DNO_BOF_ASSERTS -DNO_VALI
 add_subdirectory(BofEngine)
 add_subdirectory(BofGame)
 add_subdirectory(BofGame2)
+add_subdirectory(Examples)
 
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT BofGame)
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT PipelinesExample)
 

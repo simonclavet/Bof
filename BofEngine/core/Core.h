@@ -2,6 +2,9 @@
 
 #define __STDC_WANT_SECURE_LIB__ 1
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -17,6 +20,8 @@
 // This is expected to go in the precompiled header for the game executable (not the engine lib).
 // Don't put things that could change often here.
 #include "utils/BofAsserts.h"
+
+#include "utils/Utils.h"
 
 // don't care about warnings from those
 #pragma warning(push, 0)

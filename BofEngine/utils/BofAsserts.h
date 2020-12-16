@@ -17,8 +17,8 @@
 #ifndef NO_BOF_ASSERTS
 
 // This should be true only when testing a build without a debugger attached
-// so artists automatically skip asserts but still log them.
-// Automated tools could check logs and warn the adequate people.
+// so artists skip asserts but still log them.
+// Automated tools should warn adequate people.
 // todo: Pick this up from the commandline?
 inline bool g_BofAssertsNoDebuggerLogButContinue = false;
 

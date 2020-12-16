@@ -3,7 +3,6 @@
 #include "core/core.h"
 #include "utils/Timer.h"
 
-// sorry.. can't deal with std:: for such basic things, but 'using namespace std' is not a good idea.
 template<typename T>
 using Vector = std::vector<T>;
 template<typename K, typename V>
@@ -29,16 +28,18 @@ class VulkanHelpers
 {
 public:
 
+
+
     static VkResult createDebugUtilsMessengerEXT(
-        const vk::UniqueInstance& instance,
+        const vk::Instance& instance,
         const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
         const VkAllocationCallbacks* pAllocator,
         VkDebugUtilsMessengerEXT* pDebugMessenger)
     {
-        const auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(*instance, "vkCreateDebugUtilsMessengerEXT");
+        const auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
         if (func != nullptr)
         {
-            return func(*instance, pCreateInfo, pAllocator, pDebugMessenger);
+            return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
         }
         else
         {
@@ -63,8 +64,8 @@ public:
         const vk::SurfaceKHR& surface,
         const Vector<const char*>& deviceExtensions)
     {
-        uint32_t resultGraphicsFamily = UINT32_MAX;
-        uint32_t resultPresentFamily = UINT32_MAX;
+        u32 resultGraphicsFamily = UINT32_MAX;
+        u32 resultPresentFamily = UINT32_MAX;
 
         const bool foundGoodQueueFamilies = findQueueFamilies(physicalDevice, surface, resultGraphicsFamily, resultPresentFamily);
         if (!foundGoodQueueFamilies)
@@ -159,15 +160,15 @@ public:
         const vk::PhysicalDevice& physicalDevice, 
         const vk::SurfaceKHR& surface,
         // output
-        uint32_t& resultGraphicsFamily, 
-        uint32_t& resultPresentFamily)
+        u32& resultGraphicsFamily, 
+        u32& resultPresentFamily)
     {
         resultGraphicsFamily = UINT32_MAX;
         resultPresentFamily = UINT32_MAX;
 
         const Vector<vk::QueueFamilyProperties> queueFamilies = physicalDevice.getQueueFamilyProperties();
 
-        for (uint32_t i{0}; i < (uint32_t)queueFamilies.size(); i++)
+        for (u32 i{0}; i < (u32)queueFamilies.size(); i++)
         {
             const vk::QueueFamilyProperties& queueFamily = queueFamilies[i];
 
@@ -193,7 +194,7 @@ public:
 
     static Vector<const char*> getGLFWRequiredExtensions()
     {
-        uint32_t glfwExtensionCount = 0;
+        u32 glfwExtensionCount = 0;
         const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
         const Vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
@@ -265,7 +266,7 @@ public:
         return bestMode;
     }
 
-    static Vector<char> readFile(const std::string& filename)
+    static Vector<char> readFile(const String& filename)
     {
         std::ifstream file(filename, std::ios::ate | std::ios::binary);
         if (!file.is_open())
@@ -289,18 +290,18 @@ public:
         return device.createShaderModuleUnique({
             vk::ShaderModuleCreateFlags(),
             code.size(),
-            reinterpret_cast<const uint32_t*>(code.data())
+            reinterpret_cast<const u32*>(code.data())
             });
     }
 
-    static uint32_t findMemoryTypeIndex(
-        uint32_t acceptableMemoryTypes,
+    static u32 findMemoryTypeIndex(
+        u32 acceptableMemoryTypes,
         const vk::MemoryPropertyFlags& desiredProperties,
         const vk::PhysicalDevice& physicalDevice)
     {
         const vk::PhysicalDeviceMemoryProperties physicalMemoryProperties = physicalDevice.getMemoryProperties();
 
-        for (uint32_t memoryTypeIndex = 0; memoryTypeIndex < physicalMemoryProperties.memoryTypeCount; memoryTypeIndex++)
+        for (u32 memoryTypeIndex = 0; memoryTypeIndex < physicalMemoryProperties.memoryTypeCount; memoryTypeIndex++)
         {
             const bool isInAcceptableTypes = acceptableMemoryTypes & (1 << memoryTypeIndex);
             if (isInAcceptableTypes)
@@ -324,7 +325,7 @@ public:
 
     static void createImageAndImageView(
         const vk::Extent2D& extent,
-        const uint32_t& mipLevels,
+        const u32& mipLevels,
         const vk::SampleCountFlagBits& numSamples,
         const vk::Format& format,
         const vk::ImageTiling& tiling,
@@ -389,7 +390,7 @@ public:
         // output
         vk::Image& outputImage,
         vma::Allocation& outputImageAllocation,
-        uint32_t& outMipLevels)
+        u32& outMipLevels)
     {
         int texWidth, texHeight, texChannels;
 
@@ -430,9 +431,9 @@ public:
         // output
         vk::Image& outputImage,
         vma::Allocation& outputImageAllocation,
-        uint32_t& outMipLevels)
+        u32& outMipLevels)
     {
-        outMipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+        outMipLevels = static_cast<u32>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
         const vk::DeviceSize imageSize = texWidth * texHeight * 4;
 
@@ -455,7 +456,7 @@ public:
 
         vk::ImageCreateInfo imageInfo{};
         imageInfo.imageType = vk::ImageType::e2D;
-        imageInfo.extent = vk::Extent3D{ (uint32_t)texWidth, (uint32_t)texHeight, 1 };
+        imageInfo.extent = vk::Extent3D{ (u32)texWidth, (u32)texHeight, 1 };
         imageInfo.mipLevels = outMipLevels;
         imageInfo.arrayLayers = 1;
         imageInfo.format = format;
@@ -510,9 +511,9 @@ public:
 
     static void generateMipmaps(
         vk::Image image,
-        uint32_t texWidth,
-        uint32_t texHeight,
-        uint32_t mipLevels,
+        u32 texWidth,
+        u32 texHeight,
+        u32 mipLevels,
         const vk::Device& device,
         const vk::Queue& queue,
         const vk::CommandPool& commandPool)
@@ -532,7 +533,7 @@ public:
         int32_t mipWidth = texWidth;
         int32_t mipHeight = texHeight;
 
-        for (uint32_t i{1}; i < mipLevels; ++i)
+        for (u32 i{1}; i < mipLevels; ++i)
         {
             barrier.subresourceRange.baseMipLevel = i - 1;
             barrier.oldLayout = vk::ImageLayout::eTransferDstOptimal;
@@ -619,7 +620,7 @@ public:
         vk::Format format,
         vk::ImageLayout oldLayout,
         vk::ImageLayout newLayout,
-        uint32_t mipLevels,
+        u32 mipLevels,
         const vk::Device& device,
         const vk::Queue& queue,
         const vk::CommandPool& commandPool)
@@ -771,8 +772,8 @@ public:
     static void copyBufferToImage(
         const vk::Buffer buffer,
         const vk::Image image,
-        const uint32_t width,
-        const uint32_t height,
+        const u32 width,
+        const u32 height,
         const vk::Device& device,
         const vk::Queue& graphicsQueue,
         const vk::CommandPool& commandPool)
@@ -1087,7 +1088,7 @@ struct Buffer
 
 
 
-struct Camera
+struct BF_Camera
 {
     float m_fovRadians = 1.0f;
     float m_zNear = 0.1f;
@@ -1135,9 +1136,9 @@ struct Camera
 //    
 //    struct
 //    {
-//        uint32_t graphics;
-//        uint32_t compute;
-//        uint32_t transfer;
+//        u32 graphics;
+//        u32 compute;
+//        u32 transfer;
 //    } m_queueFamilyIndices;
 //
 //    VulkanDevice()
@@ -1166,7 +1167,7 @@ namespace bofgltf
     };
 
 
-    bool loadImageDataFuncEmpty(
+    inline bool loadImageDataFuncEmpty(
         tinygltf::Image*,// image,
         const int,// imageIndex,
         std::string*,// error,
@@ -1180,7 +1181,7 @@ namespace bofgltf
         return true;
     }
 
-    bool loadImageDataFunc(
+    inline bool loadImageDataFunc(
         tinygltf::Image* image,
         const int imageIndex,
         std::string* error,
@@ -1213,10 +1214,10 @@ namespace bofgltf
         vk::ImageLayout m_imageLayout = vk::ImageLayout::eUndefined;
         vma::Allocation m_imageAllocation = nullptr;
         vk::ImageView m_imageView = nullptr;
-        uint32_t m_width = 0;
-        uint32_t m_height = 0;
-        uint32_t m_mipLevels = 0;
-        //uint32_t m_layerCount;
+        u32 m_width = 0;
+        u32 m_height = 0;
+        u32 m_mipLevels = 0;
+        //u32 m_layerCount;
         vk::DescriptorImageInfo m_descriptor{};
         vk::Sampler m_sampler{};
 
@@ -1373,10 +1374,10 @@ namespace bofgltf
     {
         AABB m_dimensions;
 
-        uint32_t m_firstIndex = 0;
-        uint32_t m_indexCount = 0;
-        uint32_t m_firstVertex = 0;
-        uint32_t m_vertexCount = 0;
+        u32 m_firstIndex = 0;
+        u32 m_indexCount = 0;
+        u32 m_firstVertex = 0;
+        u32 m_vertexCount = 0;
         const Material& m_material;
 
         Primitive(const Material& mat) : m_material(mat) {}
@@ -1451,7 +1452,7 @@ namespace bofgltf
         glm::vec3 m_scale{ 1.0f };
 
         int m_parentIndex = -1;
-        uint32_t m_index;
+        u32 m_index;
         Vector<int> m_childrenNodeIndices;
         Mesh m_mesh; // should be id in model meshes
         Skin* m_skin = nullptr; 
@@ -1494,8 +1495,8 @@ namespace bofgltf
         inline static vk::PipelineVertexInputStateCreateInfo s_pipelineVertexInputStateCreateInfo{};
         
         static vk::VertexInputAttributeDescription getInputAttributeDescription(
-            uint32_t binding,
-            uint32_t location,
+            u32 binding,
+            u32 location,
             VertexComponent component)
         {
             vk::VertexInputAttributeDescription desc{};
@@ -1547,7 +1548,7 @@ namespace bofgltf
                 .setInputRate(vk::VertexInputRate::eVertex);
             
             s_vertexInputAttributeDescriptions.clear();
-            uint32_t location{ 0 };
+            u32 location{ 0 };
             for (VertexComponent component : components)
             {
                 s_vertexInputAttributeDescriptions.push_back(
@@ -1581,8 +1582,8 @@ namespace bofgltf
 
         bool m_metallicRoughnessWorkflow = true;
 
-        uint32_t m_vertexCount;
-        uint32_t m_indexCount;
+        u32 m_vertexCount;
+        u32 m_indexCount;
         Buffer m_vertices;
         Buffer m_indices;
 
@@ -1594,7 +1595,7 @@ namespace bofgltf
         vk::DescriptorSetLayout m_descriptorSetLayoutImage = nullptr;
         vk::DescriptorSetLayout m_descriptorSetLayoutUbo = nullptr;
         vk::MemoryPropertyFlags m_memoryPropertyFlags{};
-        uint32_t m_descriptorBindingFlags = bofgltf::DescriptorBindingFlags::ImageBaseColor;
+        u32 m_descriptorBindingFlags = bofgltf::DescriptorBindingFlags::ImageBaseColor;
 
 
 
@@ -1604,7 +1605,7 @@ namespace bofgltf
             vk::Queue& queue,
             vk::CommandPool& commandPool,
             vma::Allocator& allocator,
-            uint32_t fileLoadingFlags = FileLoadingFlags::None,
+            u32 fileLoadingFlags = FileLoadingFlags::None,
             float scale = 1.0f)
         {
             UNUSED(scale);
@@ -1769,7 +1770,7 @@ namespace bofgltf
 
 
 
-            Vector<uint32_t> indexBuffer;
+            Vector<u32> indexBuffer;
             Vector<Vertex> vertexBuffer;
 
 
@@ -1837,7 +1838,7 @@ namespace bofgltf
 
                         for (Primitive* primitive : node.m_mesh.m_primitives)
                         {
-                            for (uint32_t i = 0; i < primitive->m_vertexCount; i++)
+                            for (u32 i = 0; i < primitive->m_vertexCount; i++)
                             {
                                 Vertex& vertex = vertexBuffer[primitive->m_firstVertex + i];
                                 
@@ -1874,10 +1875,10 @@ namespace bofgltf
             }
 
             size_t vertexBufferMemorySize = vertexBuffer.size() * sizeof(Vertex);
-            size_t indexBufferMemorySize = indexBuffer.size() * sizeof(uint32_t);
+            size_t indexBufferMemorySize = indexBuffer.size() * sizeof(u32);
 
-            m_indexCount = static_cast<uint32_t>(indexBuffer.size());
-            m_vertexCount = static_cast<uint32_t>(vertexBuffer.size());
+            m_indexCount = static_cast<u32>(indexBuffer.size());
+            m_vertexCount = static_cast<u32>(vertexBuffer.size());
 
             m_vertices.m_allocator = allocator;
             m_indices.m_allocator = allocator;
@@ -1909,8 +1910,8 @@ namespace bofgltf
 
             // setup descriptors
 
-            uint32_t uboCount{ 0 };
-            uint32_t imageCount{ 0 };
+            u32 uboCount{ 0 };
+            u32 imageCount{ 0 };
 
             for (const Node& node : m_linearNodes)
             {
@@ -1972,7 +1973,7 @@ namespace bofgltf
 
             // material images descriptor layout
             {
-                uint32_t binding = 0;
+                u32 binding = 0;
                 Vector<vk::DescriptorSetLayoutBinding> descriptorSetLayoutImageBindings;
                 if (m_descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor)
                 {
@@ -2011,7 +2012,7 @@ namespace bofgltf
                         Vector<vk::DescriptorSet> descriptorSets = checkVkResult(m_device.allocateDescriptorSets(descriptorSetAllocateInfo));
                         material.m_descriptorSet = descriptorSets[0];
 
-                        uint32_t binding = 0;
+                        u32 binding = 0;
                         Vector<vk::WriteDescriptorSet> writeDescriptorSets;
                         if (m_descriptorBindingFlags & DescriptorBindingFlags::ImageBaseColor)
                         {
@@ -2054,7 +2055,7 @@ namespace bofgltf
             vk::CommandPool& commandPool,
             vma::Allocator& allocator,
             // to fill
-            Vector<uint32_t>& indexBuffer,
+            Vector<u32>& indexBuffer,
             Vector<Vertex>& vertexBuffer)
         {
             UNUSED(model, indexBuffer, vertexBuffer);
@@ -2139,9 +2140,9 @@ namespace bofgltf
                     newNode.m_mesh.m_primitives.push_back(newPrimitive);
 
                     
-                    newPrimitive->m_firstIndex = static_cast<uint32_t>(indexBuffer.size());
+                    newPrimitive->m_firstIndex = static_cast<u32>(indexBuffer.size());
 
-                    uint32_t firstVertex = static_cast<uint32_t>(vertexBuffer.size());
+                    u32 firstVertex = static_cast<u32>(vertexBuffer.size());
                     newPrimitive->m_firstVertex = firstVertex;
 
 
@@ -2161,7 +2162,7 @@ namespace bofgltf
                     const glm::vec3 posMax = glm::make_vec3(posAccessor.maxValues.data());
                     newPrimitive->m_dimensions.set(posMin, posMax);
 
-                    const uint32_t vertexCount = static_cast<uint32_t>(posAccessor.count);
+                    const u32 vertexCount = static_cast<u32>(posAccessor.count);
                     newPrimitive->m_vertexCount = vertexCount;
 
 
@@ -2176,7 +2177,7 @@ namespace bofgltf
                     const float* bufferColors =
                         Model::getAttribute("COLOR_0", tinygltfPrimitive, model);
 
-                    uint32_t numColorComponents = 0;
+                    u32 numColorComponents = 0;
 
                     if (bufferColors != nullptr)
                     {
@@ -2251,7 +2252,7 @@ namespace bofgltf
                     const tinygltf::BufferView& indexBufferView = model.bufferViews[indexAccessor.bufferView];
                     const tinygltf::Buffer& buffer = model.buffers[indexBufferView.buffer];
 
-                    uint32_t indexCount = static_cast<uint32_t>(indexAccessor.count);
+                    u32 indexCount = static_cast<u32>(indexAccessor.count);
                     
                     newPrimitive->m_indexCount = indexCount;
 
@@ -2263,8 +2264,8 @@ namespace bofgltf
                         {
                             for (size_t i = 0; i < indexCount; i++)
                             {
-                                uint32_t vertexIndexInBuffer = (uint32_t)buffer.data[byteOffsetInBuffer + i * sizeof(uint32_t)];
-                                uint32_t vertexIndexInFullArray = vertexIndexInBuffer + firstVertex;
+                                u32 vertexIndexInBuffer = (u32)buffer.data[byteOffsetInBuffer + i * sizeof(u32)];
+                                u32 vertexIndexInFullArray = vertexIndexInBuffer + firstVertex;
                                 indexBuffer.push_back(vertexIndexInFullArray);
                             }
                             break;
@@ -2274,7 +2275,7 @@ namespace bofgltf
                             for (size_t i = 0; i < indexCount; i++)
                             {
                                 uint16_t vertexIndexInBuffer = (uint16_t)buffer.data[byteOffsetInBuffer + i * sizeof(uint16_t)];
-                                uint32_t vertexIndexInFullArray = vertexIndexInBuffer + firstVertex;
+                                u32 vertexIndexInFullArray = vertexIndexInBuffer + firstVertex;
                                 indexBuffer.push_back(vertexIndexInFullArray);
                             }
                             break;
@@ -2284,7 +2285,7 @@ namespace bofgltf
                             for (size_t i = 0; i < indexCount; i++)
                             {
                                 uint8_t vertexIndexInBuffer = (uint16_t)buffer.data[byteOffsetInBuffer + i * sizeof(uint8_t)];
-                                uint32_t vertexIndexInFullArray = vertexIndexInBuffer + firstVertex;
+                                u32 vertexIndexInFullArray = vertexIndexInBuffer + firstVertex;
                                 indexBuffer.push_back(vertexIndexInFullArray);
                             }
                             break;

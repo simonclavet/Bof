@@ -189,7 +189,7 @@ private:
                 debugUtilsInfo.pfnUserCallback = debugCallback;
 
                 if (VulkanHelpers::createDebugUtilsMessengerEXT(
-                    m_instance,
+                    m_instance.get(),
                     reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT*>(&debugUtilsInfo),
                     nullptr, &m_debugCallback) != VK_SUCCESS)
                 {
